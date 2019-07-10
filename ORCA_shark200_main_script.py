@@ -103,4 +103,6 @@ stop = timeit.default_timer()
 
 print('Time: ', stop - start)
 print(yumo[0])
+
+logb = 1123
     
