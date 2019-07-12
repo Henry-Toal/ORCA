@@ -7,6 +7,9 @@ import logging
 import timeit
 import time
 import datetime
+import copy
+import csv
+import os
 
 
 #TODO:
@@ -18,24 +21,21 @@ import datetime
 # - FIgure out how to append row to DataFrame
 # - Figure out how to write row to csv
 # - Figure out how we want to create new csv files and how we change which one is being written to.
+# - At some point, change the readings section instructions to include more than the 1000-to-1053 range
 
     
     
     
     
-    
-    
-    
-    
-    # Enter Device IP Address (host) as class (str) and port number as class (int).
+    # Enter Device IP Address (host) as (str) and port number as (int).
 #--------------------------------------------------------------------------------------
 
-host = ''
-port = 0
+host = '75.127.189.115'
+port = 503
 
 #--------------------------------------------------------------------------------------
 
-    # Choose which values you want exported
+    # Choose which values you want exported  
 #--------------------------------------------------------------------------------------
 readings =    ([                       # From here you can edit which values from the
                 'Volts A-N',           #...shark200 you want. The full list can be found
@@ -43,32 +43,40 @@ readings =    ([                       # From here you can edit which values fro
                 'Volts C-N',           #...pages MM-2 to MM-3, 'Primary Readings Block',
                 'Volts A-B',           #...Modbus Address, Decimal: 1000 to 1053.
                 'Volts B-C',     
-                'Volts C-A',
-                'Amps A'
-                'Amps B'
-                'Amps C'
-                'Watts, 3-Ph total',
-                'VARs, 3-Ph total',
-                'VAs, 3-Ph total',
+                'Volts C-A',           
+                'Amps A',
+                'Amps B',
+                'Amps C',
+                'Watts 3-Ph total',
+                'VARs 3-Ph total',
+                'VAs 3-Ph total',
                 'Frequency',
                 'Neutral Current',
-                'Watts, Phase A',
-                'Watts, Phase B',
-                'Watts, Phase C',
-                'VARs, Phase A',
-                'VARs, Phase B',
-                'VARs, Phase C',
-                'VAs, Phase A',
-                'VAs, Phase B',
-                'VAs, Phase C',
-                'Power Factor, Phase A',
-                'Power Factor, Phase B',
-                'Power Factor, Phase C',
+                'Watts Phase A',
+                'Watts Phase B',
+                'Watts Phase C',
+                'VARs Phase A',
+                'VARs Phase B',
+                'VARs Phase C',
+                'VAs Phase A',
+                'VAs Phase B',
+                'VAs Phase C',
+                'Power Factor Phase A',
+                'Power Factor Phase B',
+                'Power Factor Phase C',
                 'Symmetrical Component Magnitude, 0 Seq',
                 'Symmetrical Component Magnitude, + Seq',
                 'Symmetrical Component Magnitude, - Seq'])
 
 #--------------------------------------------------------------------------------------
+
+    # Choose your timestep (in seconds) and number of decimal places
+#--------------------------------------------------------------------------------------
+timestep = 5
+decimal_places = 3
+#--------------------------------------------------------------------------------------
+
+
 
 
 
@@ -96,7 +104,7 @@ def getModbusData(host, port, start_register, end_register):
                             #...so we account for that here.
     
     num_of_registers = end_register - start_register + 1
-    # Since the registers are taken as integers, we take the range between the start and end
+    # Since the registers are taken as integers, we can take the range between the start and end
     #...registers and add 1 to get the total number of registers to query.
                                                                                                                             
     #----------------------------------------------------
@@ -126,7 +134,7 @@ def format32BitFloat(array):
     #...significant data and the second containing the most significant.
     # In order to transform the two integers into one single precision floating-point
     #...number that is also easily human-readable, we must multiply the second integer
-    #...by 2^16 and add it to the first integer. We can then use the struct python library
+    #...by 2^16 and add it to the first integer. We can then use the 'struct' python library
     #...to pack the summed integer as binary data and unpack it as the format we want (i.e. float).
     
     output = []
@@ -159,61 +167,96 @@ def main():
                                  'Amps A',
                                  'Amps B',
                                  'Amps C',
-                                 'Watts, 3-Ph total',
-                                 'VARs, 3-Ph total',
-                                 'VAs, 3-Ph total',
+                                 'Watts 3-Ph total',
+                                 'VARs 3-Ph total',
+                                 'VAs 3-Ph total',
                                  'Frequency',
                                  'Neutral Current',
-                                 'Watts, Phase A',
-                                 'Watts, Phase B',
-                                 'Watts, Phase C',
-                                 'VARs, Phase A',
-                                 'VARs, Phase B',
-                                 'VARs, Phase C',
-                                 'VAs, Phase A',
-                                 'VAs, Phase B',
-                                 'VAs, Phase C',
-                                 'Power Factor, Phase A',
-                                 'Power Factor, Phase B',
-                                 'Power Factor, Phase C',
-                                 'Symmetrical Component Magnitude, 0 Seq'
-                                 'Symmetrical Component Magnitude, + Seq'
-                                 'Symmetrical Component Magnitude, - Seq'])
+                                 'Watts Phase A',
+                                 'Watts Phase B',
+                                 'Watts Phase C',
+                                 'VARs Phase A',
+                                 'VARs Phase B',
+                                 'VARs Phase C',
+                                 'VAs Phase A',
+                                 'VAs Phase B',
+                                 'VAs Phase C',
+                                 'Power Factor Phase A',
+                                 'Power Factor Phase B',
+                                 'Power Factor Phase C',
+                                 'Symmetrical Component Magnitude 0 Seq'
+                                 'Symmetrical Component Magnitude + Seq'
+                                 'Symmetrical Component Magnitude - Seq'])
     
     primary_readings_df = pd.DataFrame(columns=primary_readings_columns)
     
+        # IMporting global variables
     #---------------------------------------------------------------------------------
     global host     # Import the host and port varibale into the main() function.
     global port
+    global readings # The list of desired values to be measured
+    global decimal_places
     #---------------------------------------------------------------------------------
-        
-
-
+    
+        # Insert timestamp column
+    #---------------------------------------------------------------------------------
+    readings.insert(0, 'timestamp') # Makes sure the data has a column for the Unix time stamp
+    #---------------------------------------------------------------------------------
         
     while True:     # Data collection loop
         
+            # Timestamp
+        #---------------------------------------------------------------------------------   
+        timestamp = time.time()  # Making the timestamp
+        #---------------------------------------------------------------------------------   
+            
+            
+            # Creating the .csv file to be written to
+        #---------------------------------------------------------------------------------
+        now = datetime.datetime.now()
         
-        timestamp = time.time()
-        
+        file_name = 'shark200_{}_{}_{}.csv'.format(now.year, now.month, now.day)  
+        #---------------------------------------------------------------------------------
            
+            
             #Primary readings block -- Pages MM-2 to MM-3 of the shark200 user's manual
         #---------------------------------------------------------------------------------
-        primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1053)
+        primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1059)
         primary_readings_data = format32BitFloat(primary_readings_modbus_data)
         
         temp_dict = {}
+        temp_list = []
         
         for index, name in enumerate(primary_readings_columns):
             if name == 'timestamp':
-                temp_dict[name] = timestamp
+                temp_dict[name] = [timestamp]
             else:
-                temp_dict[name] = primary_readings_data[index - 1]
-    
-        primary_readings_df.append(temp_dict)
+                temp_dict[name] = [round(primary_readings_data[index], decimal_places)]
+        
+        temp_df = pd.DataFrame(temp_dict)
+        
+        
+                
+        
+        if file_name not in os.listdir('.'):
+            with open(file_name, 'a') as data_file:
+                temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True)
+        
+        else:
+            with open(file_name, 'a') as data_file:
+                temp_df.to_csv(data_file, header=False)
+            
+                
+            
+
+                                                        
+        
+        
+        
             
          
-         
-        time.sleep(10)
+        print('success!')
+        time.sleep(timestep)
         
         #---------------------------------------------------------------------------------
         
@@ -234,20 +277,16 @@ def main():
     
 start = timeit.default_timer()
 
-abba = getModbusData('75.127.189.115', 503, start_register = 1000, end_register=1001)
+abba = getModbusData('75.127.189.115', 503, start_register = 1000, end_register=1059)
 yumo = format32BitFloat(abba)
 
 stop = timeit.default_timer()
 
-print('Time: ', stop - start)
-print(yumo)
+#print('Time: ', stop - start)
 
-ddff = pd.DataFrame(columns=readings)
-cc = ddff.iterrows()
+dic = {}
 
-bb = ddff.index
-dd = [x for x in bb]
-
+main()
 
 
 
