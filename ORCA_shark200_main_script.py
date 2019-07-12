@@ -9,6 +9,71 @@ import time
 import datetime
 
 
+#TODO:
+# - Maybe don't bother creating a dataframe first if we're just going to write to a .csv right away
+# - On the other hand, I want to import everything in all the relevant blocks first, then choose which
+#...columns to upload later
+# - QUESTION: Is letting a DataFrame build up data outside of the primary while True: loop a bad idea?
+# - -Possibly too much memory usage?
+# - FIgure out how to append row to DataFrame
+# - Figure out how to write row to csv
+# - Figure out how we want to create new csv files and how we change which one is being written to.
+
+    
+    
+    
+    
+    
+    
+    
+    
+    # Enter Device IP Address (host) as class (str) and port number as class (int).
+#--------------------------------------------------------------------------------------
+
+host = ''
+port = 0
+
+#--------------------------------------------------------------------------------------
+
+    # Choose which values you want exported
+#--------------------------------------------------------------------------------------
+readings =    ([                       # From here you can edit which values from the
+                'Volts A-N',           #...shark200 you want. The full list can be found
+                'Volts B-N',           #...in the shark200 user's manual, Appendix B,
+                'Volts C-N',           #...pages MM-2 to MM-3, 'Primary Readings Block',
+                'Volts A-B',           #...Modbus Address, Decimal: 1000 to 1053.
+                'Volts B-C',     
+                'Volts C-A',
+                'Amps A'
+                'Amps B'
+                'Amps C'
+                'Watts, 3-Ph total',
+                'VARs, 3-Ph total',
+                'VAs, 3-Ph total',
+                'Frequency',
+                'Neutral Current',
+                'Watts, Phase A',
+                'Watts, Phase B',
+                'Watts, Phase C',
+                'VARs, Phase A',
+                'VARs, Phase B',
+                'VARs, Phase C',
+                'VAs, Phase A',
+                'VAs, Phase B',
+                'VAs, Phase C',
+                'Power Factor, Phase A',
+                'Power Factor, Phase B',
+                'Power Factor, Phase C',
+                'Symmetrical Component Magnitude, 0 Seq',
+                'Symmetrical Component Magnitude, + Seq',
+                'Symmetrical Component Magnitude, - Seq'])
+
+#--------------------------------------------------------------------------------------
+
+
+
+
+
 
 def getModbusData(host, port, start_register, end_register):                                                               
     
@@ -81,28 +146,110 @@ def format32BitFloat(array):
         
         
 
-garbo = datetime.datetime(2019,11, 18, 23, 2)
-cc = garbo.timetuple()
 
-print(cc[2])
+def main():
+    
+    primary_readings_columns = (['timestamp',
+                                 'Volts A-N',
+                                 'Volts B-N',
+                                 'Volts C-N',
+                                 'Volts A-B',
+                                 'Volts B-C',
+                                 'Volts C-A',
+                                 'Amps A',
+                                 'Amps B',
+                                 'Amps C',
+                                 'Watts, 3-Ph total',
+                                 'VARs, 3-Ph total',
+                                 'VAs, 3-Ph total',
+                                 'Frequency',
+                                 'Neutral Current',
+                                 'Watts, Phase A',
+                                 'Watts, Phase B',
+                                 'Watts, Phase C',
+                                 'VARs, Phase A',
+                                 'VARs, Phase B',
+                                 'VARs, Phase C',
+                                 'VAs, Phase A',
+                                 'VAs, Phase B',
+                                 'VAs, Phase C',
+                                 'Power Factor, Phase A',
+                                 'Power Factor, Phase B',
+                                 'Power Factor, Phase C',
+                                 'Symmetrical Component Magnitude, 0 Seq'
+                                 'Symmetrical Component Magnitude, + Seq'
+                                 'Symmetrical Component Magnitude, - Seq'])
+    
+    primary_readings_df = pd.DataFrame(columns=primary_readings_columns)
+    
+    #---------------------------------------------------------------------------------
+    global host     # Import the host and port varibale into the main() function.
+    global port
+    #---------------------------------------------------------------------------------
+        
+
+
+        
+    while True:     # Data collection loop
+        
+        
+        timestamp = time.time()
+        
+           
+            #Primary readings block -- Pages MM-2 to MM-3 of the shark200 user's manual
+        #---------------------------------------------------------------------------------
+        primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1053)
+        primary_readings_data = format32BitFloat(primary_readings_modbus_data)
+        
+        temp_dict = {}
+        
+        for index, name in enumerate(primary_readings_columns):
+            if name == 'timestamp':
+                temp_dict[name] = timestamp
+            else:
+                temp_dict[name] = primary_readings_data[index - 1]
+    
+        primary_readings_df.append(temp_dict)
+            
+         
+         
+        time.sleep(10)
+        
+        #---------------------------------------------------------------------------------
+        
     
     
 
+        
+        
+
+        
 
 
 
 
 
 
+    
+    
 start = timeit.default_timer()
 
-abba = getModbusData('75.127.189.115', 503, 1000, 1035)
+abba = getModbusData('75.127.189.115', 503, start_register = 1000, end_register=1001)
 yumo = format32BitFloat(abba)
 
 stop = timeit.default_timer()
 
 print('Time: ', stop - start)
-print(yumo[0])
+print(yumo)
 
-logb = 1123
+ddff = pd.DataFrame(columns=readings)
+cc = ddff.iterrows()
+
+bb = ddff.index
+dd = [x for x in bb]
+
+
+
+
+    
     
