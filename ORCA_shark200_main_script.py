@@ -13,14 +13,12 @@ import os
 
 
 #TODO:
-# - Maybe don't bother creating a dataframe first if we're just going to write to a .csv right away
-# - On the other hand, I want to import everything in all the relevant blocks first, then choose which
-#...columns to upload later
-# - QUESTION: Is letting a DataFrame build up data outside of the primary while True: loop a bad idea?
-# - -Possibly too much memory usage?
-# - FIgure out how to append row to DataFrame
-# - Figure out how to write row to csv
-# - Figure out how we want to create new csv files and how we change which one is being written to.
+
+# - Create variable-length csv files? More/less than  one day
+
+
+
+
 # - At some point, change the readings section instructions to include more than the 1000-to-1053 range
 
     
@@ -64,15 +62,15 @@ readings =    ([                       # From here you can edit which values fro
                 'Power Factor Phase A',
                 'Power Factor Phase B',
                 'Power Factor Phase C',
-                'Symmetrical Component Magnitude, 0 Seq',
-                'Symmetrical Component Magnitude, + Seq',
-                'Symmetrical Component Magnitude, - Seq'])
-
+                'Symmetrical Component Magnitude 0 Seq',
+                'Symmetrical Component Magnitude + Seq',
+                'Symmetrical Component Magnitude - Seq'
+                ])
 #--------------------------------------------------------------------------------------
 
     # Choose your timestep (in seconds) and number of decimal places
 #--------------------------------------------------------------------------------------
-timestep = 5
+timestep = 1
 decimal_places = 3
 #--------------------------------------------------------------------------------------
 
@@ -151,6 +149,10 @@ def format32BitFloat(array):
                                        #...the first item out and we have our fully formatted
                                        #...float value.       
     return output
+
+
+def checkConnection():
+    pass
         
         
 
@@ -205,6 +207,7 @@ def main():
         
     while True:     # Data collection loop
         
+        start = timeit.default_timer()
             # Timestamp
         #---------------------------------------------------------------------------------   
         timestamp = time.time()  # Making the timestamp
@@ -215,7 +218,7 @@ def main():
         #---------------------------------------------------------------------------------
         now = datetime.datetime.now()
         
-        file_name = 'shark200_{}_{}_{}.csv'.format(now.year, now.month, now.day)  
+        file_name = ('shark200' + '_{}'*3 + '.csv').format(now.year, now.month, now.day)  
         #---------------------------------------------------------------------------------
            
             
@@ -234,6 +237,7 @@ def main():
                 temp_dict[name] = [round(primary_readings_data[index], decimal_places)]
         
         temp_df = pd.DataFrame(temp_dict)
+        temp_df = temp_df[readings]
         
         
                 
@@ -254,7 +258,9 @@ def main():
         
         
             
-         
+        stop = timeit.default_timer()
+        print('Time: ', stop - start)
+        print('')
         print('success!')
         time.sleep(timestep)
         
@@ -281,12 +287,12 @@ abba = getModbusData('75.127.189.115', 503, start_register = 1000, end_register=
 yumo = format32BitFloat(abba)
 
 stop = timeit.default_timer()
-
-#print('Time: ', stop - start)
-
-dic = {}
-
 main()
+print('Time: ', stop - start)
+
+
+
+
 
 
 
