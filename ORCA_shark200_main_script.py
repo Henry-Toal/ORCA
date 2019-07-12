@@ -184,8 +184,8 @@ def main():
                                  'Power Factor Phase A',
                                  'Power Factor Phase B',
                                  'Power Factor Phase C',
-                                 'Symmetrical Component Magnitude 0 Seq'
-                                 'Symmetrical Component Magnitude + Seq'
+                                 'Symmetrical Component Magnitude 0 Seq',
+                                 'Symmetrical Component Magnitude + Seq',
                                  'Symmetrical Component Magnitude - Seq'])
     
     primary_readings_df = pd.DataFrame(columns=primary_readings_columns)
