@@ -49,8 +49,8 @@ designed to be run on start-up and will automatically produce .csv files (with c
     #TODO:
 #--------------------------------------------------------------------------------------
 # - Create variable-length csv files? More/less than  one day
-
-
+# - Integrate the parameters dictionary into the rest of the program
+# -- A for loop for each meter, etc.
 
 
 # - At some point, change the readings section instructions to include more than the 1000-to-1053 range
