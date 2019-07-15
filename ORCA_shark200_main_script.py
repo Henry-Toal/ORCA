@@ -12,25 +12,64 @@ import csv
 import os
 
 
-#TODO:
+    
+"""
+--------------------------------------------------------------------------------------
+Electro Industries/GaugeTech™ Shark® 200 Data Logging Script version 0.5.7.15
 
+Developed for the Alaska Center for Energy and Power ORCA(Onsite Real-time Collection and Acquisition)
+data collection project, summer 2019.
+--------------------------------------------------------------------------------------
+
+ - This script is designed to read, format, and output power data from the Shark 200 power meter using
+ModbusTCP and various python libraries to organize the data and make it human readable. This script is
+designed to be run on start-up and will automatically produce .csv files (with column headers) in its current directory
+
+ - Before setting up the script to run on startup, please see the 'INPUTS:' section below. Here you will find several
+ parameters that must be entered:
+ 
+     *host: The ORCA meter is designed to be linked via ethernet to a powerhouse's network. The host is simply the
+     specific
+
+
+
+
+
+
+
+"""  
+    
+    
+    
+    
+    
+    
+    
+    
+    #TODO:
+#--------------------------------------------------------------------------------------
 # - Create variable-length csv files? More/less than  one day
 
 
 
 
 # - At some point, change the readings section instructions to include more than the 1000-to-1053 range
-
+# -- When that's done, change the output (to_csv) dataframe to be a seperate main dataframe that the
+#....block-specific dataframes are appended to.
+#--------------------------------------------------------------------------------------    
     
     
-    
+    # INPUTS:
     
     # Enter Device IP Address (host) as (str) and port number as (int).
+    # Choose your timestep (in seconds) and number of decimal places for the output data.
 #--------------------------------------------------------------------------------------
 
-host = '75.127.189.115'
-port = 503
+host = '75.127.189.115' #(str) # IP address of the power meter 
+port = 503 #(int)              # port the device is using for modbus protocol. Usually 502 or 503. 
 
+timestep = 1 #(int)            # The interval, in seconds, between data measurements. Below 5 seconds not recommended. 
+decimal_places = 3 #(int)      # The number of decimal places the final .csv file will be rounded to. 
 #--------------------------------------------------------------------------------------
 
     # Choose which values you want exported  
@@ -41,13 +80,14 @@ readings =    ([                       # From here you can edit which values fro
                 'Volts C-N',           #...pages MM-2 to MM-3, 'Primary Readings Block',
                 'Volts A-B',           #...Modbus Address, Decimal: 1000 to 1053.
                 'Volts B-C',     
-                'Volts C-A',           
+                'Volts C-A',                    
                 'Amps A',
                 'Amps B',
                 'Amps C',
                 'Watts 3-Ph total',
                 'VARs 3-Ph total',
                 'VAs 3-Ph total',
+                'Power Factor 3-Ph total',
                 'Frequency',
                 'Neutral Current',
                 'Watts Phase A',
@@ -58,7 +98,7 @@ readings =    ([                       # From here you can edit which values fro
                 'VARs Phase C',
                 'VAs Phase A',
                 'VAs Phase B',
-                'VAs Phase C',
+                'VAs, Phase C',
                 'Power Factor Phase A',
                 'Power Factor Phase B',
                 'Power Factor Phase C',
@@ -68,19 +108,50 @@ readings =    ([                       # From here you can edit which values fro
                 ])
 #--------------------------------------------------------------------------------------
 
-    # Choose your timestep (in seconds) and number of decimal places
+
+    # Column names for the variables listed in the Shark 200 user's manual.
+    
+    # !!! DO NOT CHANGE !!!
 #--------------------------------------------------------------------------------------
-timestep = 1
-decimal_places = 3
+primary_readings_columns = (['timestamp',
+                                 'Volts A-N',
+                                 'Volts B-N',
+                                 'Volts C-N',
+                                 'Volts A-B',
+                                 'Volts B-C',
+                                 'Volts C-A',
+                                 'Amps A',
+                                 'Amps B',
+                                 'Amps C',
+                                 'Watts 3-Ph total',
+                                 'VARs 3-Ph total',
+                                 'VAs 3-Ph total',
+                                 'Power Factor 3-Ph total',
+                                 'Frequency',
+                                 'Neutral Current',
+                                 'Watts Phase A',
+                                 'Watts Phase B',
+                                 'Watts Phase C',
+                                 'VARs Phase A',
+                                 'VARs, Phase B',
+                                 'VARs Phase C',
+                                 'VAs Phase A',
+                                 'VAs Phase B',
+                                 'VAs Phase C',
+                                 'Power Factor Phase A',
+                                 'Power Factor Phase B',
+                                 'Power Factor Phase C',
+                                 'Symmetrical Component Magnitude 0 Seq',
+                                 'Symmetrical Component Magnitude + Seq',
+                                 'Symmetrical Component Magnitude - Seq'])
+
 #--------------------------------------------------------------------------------------
 
 
 
-
-
-
-
-
+    # Supporting Functions
+#######################################################################################
+#######################################################################################
 def getModbusData(host, port, start_register, end_register):                                                               
     
     # Returns a list containing the data from each Modbus register between
@@ -153,51 +224,30 @@ def format32BitFloat(array):
 
 def checkConnection():
     pass
-        
-        
+
+#######################################################################################
+#######################################################################################
 
 
-def main():
+def main():  # Primary function that contains the data collection loop
     
-    primary_readings_columns = (['timestamp',
-                                 'Volts A-N',
-                                 'Volts B-N',
-                                 'Volts C-N',
-                                 'Volts A-B',
-                                 'Volts B-C',
-                                 'Volts C-A',
-                                 'Amps A',
-                                 'Amps B',
-                                 'Amps C',
-                                 'Watts 3-Ph total',
-                                 'VARs 3-Ph total',
-                                 'VAs 3-Ph total',
-                                 'Frequency',
-                                 'Neutral Current',
-                                 'Watts Phase A',
-                                 'Watts Phase B',
-                                 'Watts Phase C',
-                                 'VARs Phase A',
-                                 'VARs Phase B',
-                                 'VARs Phase C',
-                                 'VAs Phase A',
-                                 'VAs Phase B',
-                                 'VAs Phase C',
-                                 'Power Factor Phase A',
-                                 'Power Factor Phase B',
-                                 'Power Factor Phase C',
-                                 'Symmetrical Component Magnitude 0 Seq',
-                                 'Symmetrical Component Magnitude + Seq',
-                                 'Symmetrical Component Magnitude - Seq'])
     
-    primary_readings_df = pd.DataFrame(columns=primary_readings_columns)
     
-        # IMporting global variables
+    
+        # Importing global variables
     #---------------------------------------------------------------------------------
     global host     # Import the host and port varibale into the main() function.
     global port
     global readings # The list of desired values to be measured
     global decimal_places
+    global primary_readings_columns
+    #---------------------------------------------------------------------------------
+    
+        # Removing commas from the column names list(s) and readings list
+    #---------------------------------------------------------------------------------
+    readings = [name.replace(',', '') for name in readings]
+    
+    primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]
     #---------------------------------------------------------------------------------
     
         # Insert timestamp column
@@ -208,6 +258,8 @@ def main():
     while True:     # Data collection loop
         
         start = timeit.default_timer()
+            
+            
             # Timestamp
         #---------------------------------------------------------------------------------   
         timestamp = time.time()  # Making the timestamp
@@ -234,18 +286,19 @@ def main():
             if name == 'timestamp':
                 temp_dict[name] = [timestamp]
             else:
-                temp_dict[name] = [round(primary_readings_data[index], decimal_places)]
-        
-        temp_df = pd.DataFrame(temp_dict)
+                temp_dict[name] = [round(primary_readings_data[index - 1], decimal_places)]
+                                                            # Here we need to reduce the index by 1
+        temp_df = pd.DataFrame(temp_dict)                   #...to account for the added timestamp column
         temp_df = temp_df[readings]
         
         
                 
         
-        if file_name not in os.listdir('.'):
+        if file_name not in os.listdir('.'):        # '.' indicates 'current directory'
             with open(file_name, 'a') as data_file:
                 temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True)
-        
+                                # This is a quick and dirty way to write the column headers in without
+                                #...any of the other data
         else:
             with open(file_name, 'a') as data_file:
                 temp_df.to_csv(data_file, header=False)
@@ -262,6 +315,7 @@ def main():
         print('Time: ', stop - start)
         print('')
         print('success!')
+        print('Length of readings: {}'.format(len(readings)))
         time.sleep(timestep)
         
         #---------------------------------------------------------------------------------
@@ -271,8 +325,8 @@ def main():
 
         
         
-
-        
+abba = getModbusData(host, port, start_register=9, end_register=16)
+print(abba)     
 
 
 
@@ -281,15 +335,6 @@ def main():
 
     
     
-start = timeit.default_timer()
-
-abba = getModbusData('75.127.189.115', 503, start_register = 1000, end_register=1059)
-yumo = format32BitFloat(abba)
-
-stop = timeit.default_timer()
-main()
-print('Time: ', stop - start)
-
 
 
 
