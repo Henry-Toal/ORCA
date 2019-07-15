@@ -72,6 +72,7 @@ timestep = 1 #(int)            # The interval, in seconds, between data measurem
 decimal_places = 3 #(int)      # The number of decimal places the final .csv file will be rounded to. 
 #--------------------------------------------------------------------------------------
 
+
     # Choose which values you want exported  
 #--------------------------------------------------------------------------------------
 readings =    ([                       # From here you can edit which values from the
@@ -325,8 +326,7 @@ def main():  # Primary function that contains the data collection loop
 
         
         
-abba = getModbusData(host, port, start_register=9, end_register=16)
-print(abba)     
+   
 
 
 
