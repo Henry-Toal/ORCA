@@ -10,6 +10,7 @@ import datetime
 import copy
 import csv
 import os
+import shark_200_meter_settings
 
 
     
@@ -49,7 +50,7 @@ designed to be run on start-up and will automatically produce .csv files (with c
     #TODO:
 #--------------------------------------------------------------------------------------
 # - Create variable-length csv files? More/less than  one day
-
+# - Setup a seperate logging file for each of the meters.
 
 
 
@@ -77,7 +78,7 @@ meter_name = 'shark_1'
 
     # Choose which values you want exported  
 #--------------------------------------------------------------------------------------
-readings =    ([                       # From here you can edit which values from the
+readings =    ((                       # From here you can edit which values from the
                 'Volts A-N',           #...shark200 you want. The full list can be found
                 'Volts B-N',           #...in the shark200 user's manual, Appendix B,
                 'Volts C-N',           #...pages MM-2 to MM-3, 'Primary Readings Block',
@@ -108,7 +109,12 @@ readings =    ([                       # From here you can edit which values fro
                 'Symmetrical Component Magnitude 0 Seq',
                 'Symmetrical Component Magnitude + Seq',
                 'Symmetrical Component Magnitude - Seq'
-                ])
+                ))
+#--------------------------------------------------------------------------------------
+
+    # Setup logging file
+#--------------------------------------------------------------------------------------
+
 #--------------------------------------------------------------------------------------
 
 
@@ -116,7 +122,7 @@ readings =    ([                       # From here you can edit which values fro
     
     # !!! DO NOT CHANGE !!!
 #--------------------------------------------------------------------------------------
-primary_readings_columns = (['timestamp',
+primary_readings_columns = (('timestamp',
                                  'Volts A-N',
                                  'Volts B-N',
                                  'Volts C-N',
@@ -146,7 +152,7 @@ primary_readings_columns = (['timestamp',
                                  'Power Factor Phase C',
                                  'Symmetrical Component Magnitude 0 Seq',
                                  'Symmetrical Component Magnitude + Seq',
-                                 'Symmetrical Component Magnitude - Seq'])
+                                 'Symmetrical Component Magnitude - Seq'))
 
 #--------------------------------------------------------------------------------------
 
@@ -232,6 +238,7 @@ def format32BitFloat(array):
 def checkConnection(host):
     
     client = ModbusClient()
+    client.host(host)
     client.open()
     
     if client.is_open():
@@ -270,7 +277,6 @@ def main():  # Primary function that contains the data collection loop
     
         # Filtering out any unwanted characters in the meter name
     #---------------------------------------------------------------------------------
-        if len(meter_name) == 0:
     #---------------------------------------------------------------------------------
     
         # Insert timestamp column
@@ -292,10 +298,12 @@ def main():  # Primary function that contains the data collection loop
             
         while True:
             if checkConnection(host) == True:
+                print('connection good')
                 break
             else:
-                sleep(10)
-            
+                print('connection error')
+                time.sleep(3)
+#            
             
             
             
@@ -332,14 +340,14 @@ def main():  # Primary function that contains the data collection loop
         temp_df = pd.DataFrame(temp_dict)     # Make a pandas.DataFrame from the dictionary                 
         temp_df = temp_df[readings]           # Filters out all columns that weren't specified in the 'readings' variable
         
-        if file_name not in os.listdir('.'):                                          # '.' indicates 'current directory'
-            with open(file_name, 'a') as data_file:                                   # 'a' indicates 'append' to the file
-                temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True)     # This is a quick and dirty way to write the column headers to the .csv
-                                                                                      #...file while making sure they line up with the columns you want.
+        if file_name not in os.listdir('.'):                                                       # '.' indicates 'current directory'
+            with open(file_name, 'a') as data_file:                                                # 'a' indicates 'append' to the file
+                temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True, index=False)     # This is a quick and dirty way to write the column headers to the .csv
+                                                                                                   #...file while making sure they line up with the columns you want.
                                 
         else:
-            with open(file_name, 'a') as data_file:         # 'a' indicates 'append' to the file
-                temp_df.to_csv(data_file, header=False)     # This will account for every other loop iteration and append the data to the .csv file
+            with open(file_name, 'a') as data_file:                      # 'a' indicates 'append' to the file
+                temp_df.to_csv(data_file, header=False, index=False)     # This will account for every other loop iteration and append the data to the .csv file
             
                 
             
@@ -372,12 +380,15 @@ def main():  # Primary function that contains the data collection loop
         
 
     
+import shark_200_meter_settings
+
+settings = shark_200_meter_settings.settings
 
 
 
-if __name__ == "__main__":
-    main()
 
+#if __name__ == '__main__':
+#    main()
 
 
 
