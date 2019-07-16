@@ -69,7 +69,9 @@ host = '75.127.189.115' #(str) # IP address of the power meter
 port = 503 #(int)              # port the device is using for modbus protocol. Usually 502 or 503. 
 
 timestep = 1 #(int)            # The interval, in seconds, between data measurements. Below 5 seconds not recommended. 
-decimal_places = 3 #(int)      # The number of decimal places the final .csv file will be rounded to. 
+decimal_places = 3 #(int)      # The number of decimal places the final .csv file will be rounded to.
+
+meter_name = 'shark_1'
 #--------------------------------------------------------------------------------------
 
 
@@ -181,14 +183,18 @@ def getModbusData(host, port, start_register, end_register):
         
         # Reading the device's Modbus registers
     #----------------------------------------------------
+    
+
+    
     client.open()     # Opens the connection
     
     response = client.read_holding_registers(start_register, num_of_registers)
-        # This function returns a list of values, one for each of the Modbus registers specified.
-        # It works even if some of the registers queried have data stored in different formats,
-        #...so be careful not to automatically treat all data the same.
+                # This function returns a list of values, one for each of the Modbus registers specified.
+                # It works even if some of the registers queried have data stored in different formats,
+                #...so be careful not to automatically treat all data the same.
     
     client.close()     # Closes the connection
+    
     #----------------------------------------------------
     
     
@@ -223,8 +229,19 @@ def format32BitFloat(array):
     return output
 
 
-def checkConnection():
-    pass
+def checkConnection(host):
+    
+    client = ModbusClient()
+    client.open()
+    
+    if client.is_open():
+        status = True
+    else:
+        status = False
+        
+    client.close()
+    
+    return status
 
 #######################################################################################
 #######################################################################################
@@ -251,14 +268,36 @@ def main():  # Primary function that contains the data collection loop
     primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]
     #---------------------------------------------------------------------------------
     
+        # Filtering out any unwanted characters in the meter name
+    #---------------------------------------------------------------------------------
+        if len(meter_name) == 0:
+    #---------------------------------------------------------------------------------
+    
         # Insert timestamp column
     #---------------------------------------------------------------------------------
     readings.insert(0, 'timestamp') # Makes sure the data has a column for the Unix time stamp
     #---------------------------------------------------------------------------------
         
+    
+    ###################################################################################
+    ###################################################################################
+    
     while True:     # Data collection loop
         
+            # Start Timer
+        ##############################
         start = timeit.default_timer()
+        ##############################
+            
+            
+        while True:
+            if checkConnection(host) == True:
+                break
+            else:
+                sleep(10)
+            
+            
+            
             
             
             # Timestamp
@@ -280,29 +319,27 @@ def main():  # Primary function that contains the data collection loop
         primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1059)
         primary_readings_data = format32BitFloat(primary_readings_modbus_data)
         
-        temp_dict = {}
-        temp_list = []
+        temp_dict = {}     # Dictionary that will take in the new data on each loop and be cleared on each iteration.
         
-        for index, name in enumerate(primary_readings_columns):
+        for index, name in enumerate(primary_readings_columns):     # Here we loop through all the possible columns in this block and add them to the dictionary
             if name == 'timestamp':
                 temp_dict[name] = [timestamp]
             else:
-                temp_dict[name] = [round(primary_readings_data[index - 1], decimal_places)]
-                                                            # Here we need to reduce the index by 1
-        temp_df = pd.DataFrame(temp_dict)                   #...to account for the added timestamp column
-        temp_df = temp_df[readings]
+                temp_dict[name] = [round(primary_readings_data[index - 1], decimal_places)]     # Here we need to reduce the index by 1
+                                                                                                #...to account for the added timestamp column
+                                                            
         
+        temp_df = pd.DataFrame(temp_dict)     # Make a pandas.DataFrame from the dictionary                 
+        temp_df = temp_df[readings]           # Filters out all columns that weren't specified in the 'readings' variable
         
-                
-        
-        if file_name not in os.listdir('.'):        # '.' indicates 'current directory'
-            with open(file_name, 'a') as data_file:
-                temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True)
-                                # This is a quick and dirty way to write the column headers in without
-                                #...any of the other data
+        if file_name not in os.listdir('.'):                                          # '.' indicates 'current directory'
+            with open(file_name, 'a') as data_file:                                   # 'a' indicates 'append' to the file
+                temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True)     # This is a quick and dirty way to write the column headers to the .csv
+                                                                                      #...file while making sure they line up with the columns you want.
+                                
         else:
-            with open(file_name, 'a') as data_file:
-                temp_df.to_csv(data_file, header=False)
+            with open(file_name, 'a') as data_file:         # 'a' indicates 'append' to the file
+                temp_df.to_csv(data_file, header=False)     # This will account for every other loop iteration and append the data to the .csv file
             
                 
             
@@ -310,14 +347,22 @@ def main():  # Primary function that contains the data collection loop
                                                         
         
         
-        
             
+            
+            
+            # End Timer
+        ##########################################    
         stop = timeit.default_timer()
         print('Time: ', stop - start)
         print('')
         print('success!')
         print('Length of readings: {}'.format(len(readings)))
         time.sleep(timestep)
+        ##########################################
+        
+        
+    ###################################################################################
+    ###################################################################################
         
         #---------------------------------------------------------------------------------
         
@@ -325,16 +370,13 @@ def main():  # Primary function that contains the data collection loop
     
 
         
-        
-   
-
-
-
-
-
 
     
-    
+
+
+
+if __name__ == "__main__":
+    main()
 
 
 
