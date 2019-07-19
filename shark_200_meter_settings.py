@@ -19,24 +19,26 @@ be entered in manually:
  
  - PORT: The port the specific device is using for Modbus communication. Usually 502 or 503.
  
- - TIMESTEP: Here you can choose the interval between data measurements (in seconds). Timesteps below 5 seconds are not recommended especially if you
-             are pulling data from multiple meters.
+ - TIMESTEP: Here you can choose the interval between data measurements (in seconds). You unfortunately you must choose the same timestep for each meter.
              
  - NUMBER OF DECIMAL PLACES: Here you can choose how many decimal places to round your data.
  
- - VALUES: The final item in each tuble is another tuple containing every value currently available for measurement. If you only want specific values,
+ - VALUES: The final item in each tuple is a list containing every value currently available for measurement. If you only want specific values,
            please comment out any you do not wish to include.
     --------------------------------------------------------------------------------------
     
     
     # Instructions
     --------------------------------------------------------------------------------------
-    I. In the 'settings' list, you will find a meter called 'test_meter' already entered complete with all required paramters. Please copy and paste
-        This tuple for each meter you wish to pull data from and enter in the required parameters/comment out any unwanted measured values.
-        
-    II. Save 'shark_200_meter_settings.py'
+    I. Set your timestep(in seconds). This value will be applied accross all your meters.
     
-    III. Close the file
+    II. In the 'settings' list, you will find a meter called 'test_meter' already entered complete with all required paramters. Copy and paste
+        This tuple for each meter you wish to pull data from and enter in the required parameters/comment out any unwanted measured values. Take care
+        to leave the TIMESTEP variable as it is.
+        
+    III. Save 'shark_200_meter_settings.py'
+    
+    IV. Close the file
     --------------------------------------------------------------------------------------
  
 
@@ -53,17 +55,18 @@ be entered in manually:
 
 
 
-
-
- 
+    # Set your Desired Timestep
+#------------------------------------------------------
+TIMESTEP = 4
+#------------------------------------------------------
 
 
 settings = [
 
 # EXAMPLE:
 
-#             (str)     (str)   (int)        (int)               (int)          
-#        ('METER NAME', 'HOST', PORT, TIMESTEP(seconds), NUMBER OF DECIMAL PLACES, (
+#             (str)     (str)   (int)                   (int)          
+#        ('METER NAME', 'HOST', PORT, TIMESTEP, NUMBER OF DECIMAL PLACES, (
 #                                                                                 'Volts A-N',
 #                                                                                 'Volts B-N',
 #                                                                                 'Volts C-N',
@@ -96,16 +99,16 @@ settings = [
 #                                                                                 'Symmetrical Component Magnitude - Seq')
 ##             ), 
     
-            ('test_meter', '75.127.189.115', 503, 30, 3, (
+            ('meter1', '75.127.189.115', 503, TIMESTEP, 3, [
                                                          'Volts A-N',
-                                                         'Volts B-N',
-                                                         'Volts C-N',
-                                                         'Volts A-B',
+                                                         #'Volts B-N',
+                                                         #'Volts C-N',
+                                                         #'Volts A-B',
                                                          'Volts B-C',
                                                          'Volts C-A',
-                                                         'Amps A',
-                                                         'Amps B',
-                                                         'Amps C',
+                                                         #'Amps A',
+                                                         #'Amps B',
+                                                         #'Amps C',
                                                          'Watts 3-Ph total',
                                                          'VARs 3-Ph total',
                                                          'VAs 3-Ph total',
@@ -126,7 +129,40 @@ settings = [
                                                          'Power Factor Phase C',
                                                          'Symmetrical Component Magnitude 0 Seq',
                                                          'Symmetrical Component Magnitude + Seq',
-                                                         'Symmetrical Component Magnitude - Seq')
+                                                         'Symmetrical Component Magnitude - Seq']
+             ),
+            
+            ('meter2', '75.127.189.115', 503, TIMESTEP, 3, [
+                                                         #'Volts A-N',
+                                                         #'Volts B-N',
+                                                         #'Volts C-N',
+                                                         #'Volts A-B',
+                                                         #'Volts B-C',
+                                                         #'Volts C-A',
+                                                         #'Amps A',
+                                                         #'Amps B',
+                                                         #'Amps C',
+                                                         #'Watts 3-Ph total',
+                                                         #'VARs 3-Ph total',
+                                                         #'VAs 3-Ph total',
+                                                         #'Power Factor 3-Ph total',
+                                                         'Frequency',
+                                                         #'Neutral Current',
+                                                         #'Watts Phase A',
+                                                         #'Watts Phase B',
+                                                         #'Watts Phase C',
+                                                         #'VARs Phase A',
+                                                         #'VARs, Phase B',
+                                                         #'VARs Phase C',
+                                                         #'VAs Phase A',
+                                                         #'VAs Phase B',
+                                                         'VAs Phase C',
+                                                         #'Power Factor Phase A',
+                                                         #'Power Factor Phase B',
+                                                         #'Power Factor Phase C',
+                                                         #'Symmetrical Component Magnitude 0 Seq',
+                                                         #'Symmetrical Component Magnitude + Seq',
+                                                         'Symmetrical Component Magnitude - Seq']
              ), 
     
     ]
