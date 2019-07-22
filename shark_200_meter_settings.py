@@ -32,9 +32,13 @@ be entered in manually:
     --------------------------------------------------------------------------------------
     I. Set your timestep(in seconds). This value will be applied accross all your meters.
     
-    II. In the 'settings' list, you will find a meter called 'test_meter' already entered complete with all required paramters. Copy and paste
-        This tuple for each meter you wish to pull data from and enter in the required parameters/comment out any unwanted measured values. Take care
-        to leave the TIMESTEP variable as it is.
+    II. In the 'settings' list, you will find a meter called 'test_meter' already entered complete with all required paramters.
+        A. Copy and paste this tuple for each meter you wish to pull data from.
+            1. Fill in the required parameters (meter name, host, port,and number of decimal places) for each meter you add.
+            2. For each meter, comment out any unwanted measured values in the MEASURED VALUES column.
+        B. The test meter is only for reference purposes and connects to the Electro Industries internet-connected
+            Shark 200 meter which you can view at www.mynexusmeter.com:8081
+            Feel free to remove the test meter if you so choose.
         
     III. Save 'shark_200_meter_settings.py'
     
@@ -65,8 +69,8 @@ settings = [
 
 # EXAMPLE:
 
-#             (str)     (str)   (int)                   (int)          
-#        ('METER NAME', 'HOST', PORT, TIMESTEP, NUMBER OF DECIMAL PLACES, (
+#             (str)     (str)   (int)        (int)                              MEASURED VALUES:     
+#        ('METER NAME', 'HOST', PORT, NUMBER OF DECIMAL PLACES, (
 #                                                                                 'Volts A-N',
 #                                                                                 'Volts B-N',
 #                                                                                 'Volts C-N',
@@ -74,9 +78,9 @@ settings = [
 #                                                                                 'Volts B-C',
 #                                                                                 'Volts C-A',
 #                                                                                 'Amps A',
-#                                                                                 'Amps B',
-#                                                                                 'Amps C',
-#                                                                                 'Watts 3-Ph total',
+#                                                          Commented-out values   #'Amps B',
+#                                                          will not show up in    #'Amps C',
+#                                                          the final .csv files   #'Watts 3-Ph total',
 #                                                                                 'VARs 3-Ph total',
 #                                                                                 'VAs 3-Ph total',
 #                                                                                 'Power Factor 3-Ph total',
@@ -97,9 +101,42 @@ settings = [
 #                                                                                 'Symmetrical Component Magnitude 0 Seq',
 #                                                                                 'Symmetrical Component Magnitude + Seq',
 #                                                                                 'Symmetrical Component Magnitude - Seq')
-##             ), 
+##             ),
+    ('test_meter', '75.127.189.115', 503, 3, [
+                                                         'Volts A-N',
+                                                         'Volts B-N',
+                                                         'Volts C-N',
+                                                         'Volts A-B',
+                                                         'Volts B-C',
+                                                         'Volts C-A',
+                                                         'Amps A',
+                                                         'Amps B',
+                                                         'Amps C',
+                                                         'Watts 3-Ph total',
+                                                         'VARs 3-Ph total',
+                                                         'VAs 3-Ph total',
+                                                         'Power Factor 3-Ph total',
+                                                         'Frequency',
+                                                         'Neutral Current',
+                                                         'Watts Phase A',
+                                                         'Watts Phase B',
+                                                         'Watts Phase C',
+                                                         'VARs Phase A',
+                                                         'VARs, Phase B',
+                                                         'VARs Phase C',
+                                                         'VAs Phase A',
+                                                         'VAs Phase B',
+                                                         'VAs Phase C',
+                                                         'Power Factor Phase A',
+                                                         'Power Factor Phase B',
+                                                         'Power Factor Phase C',
+                                                         'Symmetrical Component Magnitude 0 Seq',
+                                                         'Symmetrical Component Magnitude + Seq',
+                                                         'Symmetrical Component Magnitude - Seq']
+             ),
+
     
-            ('meter1', '75.127.189.115', 503, TIMESTEP, 3, [
+            ('meter1', '75.127.189.115', 503, 3, [
                                                          'Volts A-N',
                                                          #'Volts B-N',
                                                          #'Volts C-N',
@@ -129,10 +166,10 @@ settings = [
                                                          'Power Factor Phase C',
                                                          'Symmetrical Component Magnitude 0 Seq',
                                                          'Symmetrical Component Magnitude + Seq',
-                                                         'Symmetrical Component Magnitude - Seq']
+                                                         'Symmetrical Component Magnitude - Seq',]
              ),
             
-            ('meter2', '75.127.189.115', 503, TIMESTEP, 3, [
+            ('meter2', '75.127.189.115', 503, 3, [
                                                          #'Volts A-N',
                                                          #'Volts B-N',
                                                          #'Volts C-N',
@@ -163,6 +200,6 @@ settings = [
                                                          #'Symmetrical Component Magnitude 0 Seq',
                                                          #'Symmetrical Component Magnitude + Seq',
                                                          'Symmetrical Component Magnitude - Seq']
-             ), 
+             ) 
     
     ]
