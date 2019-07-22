@@ -36,16 +36,11 @@ designed to be run on start-up and will automatically produce .csv files (with c
 
 
 
-
-
-
 """  
     
     
     
-    
-    
-    
+
     
     
     #TODO:
@@ -59,92 +54,10 @@ designed to be run on start-up and will automatically produce .csv files (with c
 # -- When that's done, change the output (to_csv) dataframe to be a seperate main dataframe that the
 #....block-specific dataframes are appended to.
 #--------------------------------------------------------------------------------------    
+
+ 
+
     
-    
-
-#--------------------------------------------------------------------------------------
-
-
-    # Choose which values you want exported  
-#--------------------------------------------------------------------------------------
-readings =    ((                       # From here you can edit which values from the
-                'Volts A-N',           #...shark200 you want. The full list can be found
-                'Volts B-N',           #...in the shark200 user's manual, Appendix B,
-                'Volts C-N',           #...pages MM-2 to MM-3, 'Primary Readings Block',
-                'Volts A-B',           #...Modbus Address, Decimal: 1000 to 1053.
-                'Volts B-C',     
-                'Volts C-A',                    
-                'Amps A',
-                'Amps B',
-                'Amps C',
-                'Watts 3-Ph total',
-                'VARs 3-Ph total',
-                'VAs 3-Ph total',
-                'Power Factor 3-Ph total',
-                'Frequency',
-                'Neutral Current',
-                'Watts Phase A',
-                'Watts Phase B',
-                'Watts Phase C',
-                'VARs Phase A',
-                'VARs Phase B',
-                'VARs Phase C',
-                'VAs Phase A',
-                'VAs Phase B',
-                'VAs, Phase C',
-                'Power Factor Phase A',
-                'Power Factor Phase B',
-                'Power Factor Phase C',
-                'Symmetrical Component Magnitude 0 Seq',
-                'Symmetrical Component Magnitude + Seq',
-                'Symmetrical Component Magnitude - Seq'
-                ))
-#--------------------------------------------------------------------------------------
-
-    # Setup logging file
-#--------------------------------------------------------------------------------------
-
-#--------------------------------------------------------------------------------------
-
-
-    # Column names for the variables listed in the Shark 200 user's manual.
-    
-    # !!! DO NOT CHANGE !!!
-#--------------------------------------------------------------------------------------
-#primary_readings_columns = (('timestamp',
-#                                 'Volts A-N',
-#                                 'Volts B-N',
-#                                 'Volts C-N',
-#                                 'Volts A-B',
-#                                 'Volts B-C',
-#                                 'Volts C-A',
-#                                 'Amps A',
-#                                 'Amps B',
-#                                 'Amps C',
-#                                 'Watts 3-Ph total',
-#                                 'VARs 3-Ph total',
-#                                 'VAs 3-Ph total',
-#                                 'Power Factor 3-Ph total',
-#                                 'Frequency',
-#                                 'Neutral Current',
-#                                 'Watts Phase A',
-#                                 'Watts Phase B',
-#                                 'Watts Phase C',
-#                                 'VARs Phase A',
-#                                 'VARs, Phase B',
-#                                 'VARs Phase C',
-#                                 'VAs Phase A',
-#                                 'VAs Phase B',
-#                                 'VAs Phase C',
-#                                 'Power Factor Phase A',
-#                                 'Power Factor Phase B',
-#                                 'Power Factor Phase C',
-#                                 'Symmetrical Component Magnitude 0 Seq',
-#                                 'Symmetrical Component Magnitude + Seq',
-#                                 'Symmetrical Component Magnitude - Seq'))
-
-#--------------------------------------------------------------------------------------
-
 
 
     # Supporting Functions
@@ -224,8 +137,8 @@ def format32BitFloat(array):
     return output
 
 
-def checkConnection(host):
-    
+def checkConnection(host): # A simple function to check if the Modbus connection is open
+                           #...using the pyModbus.ModbusClient.is_open() method.
     client = ModbusClient()
     client.host(host)
     client.open()
@@ -243,15 +156,70 @@ def checkConnection(host):
 #######################################################################################
 
 
+# Setup logging directory and 'root' logger for script-wide errors
+#--------------------------------------------------------------------------------------
+if 'logs' not in os.listdir('.'):
+    os.mkdir('logs')
+    
+    logging.basicConfig(filename='logs/primary_log.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)
+#--------------------------------------------------------------------------------------
+    
+
 def main():  # Primary function that contains the data collection loop
 
-        # Logging
+    logging.basicConfig(filename='logs/primary_log.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)
+
+        # Importing the specified timestep
     #---------------------------------------------------------------------------------
-    logging.basicConfig(filename='log.txt', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)                     
+    timestep = shark_200_meter_settings.TIMESTEP
+    #---------------------------------------------------------------------------------
+       
+       
+       # Importing the settings from the settings file
+    #---------------------------------------------------------------------------------
+    settings = shark_200_meter_settings.settings
+    
+    for meter in settings:
+        
+        if len([char for char in meter[1] if ((char >= '0') & (char <= '9')) | (char == '.')]) != len(meter[1]):
+            logging.error('Invalid host name for ' + meter[0] + ': ' + meter[1])
+            exit()
+    #---------------------------------------------------------------------------------
+    
+    
+        # Importing the meter names for logging purposes
+    #---------------------------------------------------------------------------------   
+    meter_names_list = [array[0].strip() for array in settings]
+    #---------------------------------------------------------------------------------
+           
+           
+        # Logging
+    #---------------------------------------------------------------------------------    
+    logger_list = [logging.getLogger(name) for name in meter_names_list]
+    
+    for logger in logger_list:
+        handler = logging.FileHandler('./logs/' + logger.name + '.log')
+        handler.setLevel(logging.INFO)
+        handler_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
+        handler.setFormatter(handler_formatter)
+        logger.addHandler(handler)
+        
+        # See https://docs.python.org/3/library/logging.html for more info in valid LogRecord attributes
+        #...to pass as the format argument
+        
+        # By default, the basic logger only reports logs of level 'WARNING' and above, so here,
+        #...since we want information on routine events like the creation of a new .csv file,
+        #...we set lvel to logging.INFO.
     #--------------------------------------------------------------------------------- 
-    
-    
-    
+     
+        # Creating the directory to store .csv files
+    #---------------------------------------------------------------------------------
+    if 'data' not in os.listdir('.'):
+        try:
+            os.mkdir('data')
+        except:
+            logging.error('Could not create data directory', exc_info=True)
+    #---------------------------------------------------------------------------------
     ###################################################################################
     ###################################################################################
     while True:     # Data collection loop
@@ -260,18 +228,25 @@ def main():  # Primary function that contains the data collection loop
         ##############################
         start = timeit.default_timer()
         ##############################
-            
         
+            # Beginning of the message printed after each loop
+        #--------------------------------------------------------------------------------- 
+        print('')
+        print(datetime.datetime.now())
+        print('---------------------------------------------------')
+        #--------------------------------------------------------------------------------- 
                
-        for meter_name, host, port, timestep, decimal_places, readings in shark_200_meter_settings.settings:
+        for meter_name, host, port, decimal_places, readings in settings:
+            logger = [logger for logger in logger_list if logger.name == meter_name][0]
         
             while True:
                 if checkConnection(host) == True:
                     print('connection to ' + meter_name + ' good')
                     break
                 else:
-                    logging.error('Could not connect to {} at '{}'.'.format(meter_name, host) + 'Retrying...')
-                    time.sleep(3)
+                    print('Could not connect to {} at {}'.format(meter_name, host) + ' Retrying...')
+                    logger.error('Could not connect to {} at {}'.format(meter_name, host) + ' Retrying...')
+                    time.sleep(10)
         
         
             
@@ -309,14 +284,14 @@ def main():  # Primary function that contains the data collection loop
             primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1059)
             
             if primary_readings_modbus_data == None:
-                logging.error('Modbus query returned no data')
+                logger.error('Modbus query returned no data')
                 continue
             else:
                 try:
                     primary_readings_data = format32BitFloat(primary_readings_modbus_data)
                 except:
-                    logging.error('format32BitFLoat() failed to format data'
-                                   + '\n' + 'Data Type: {}'.format(type(primary_readings_modbus_data)), exc_info=True)
+                    logger.error('format32BitFLoat() failed to format data'
+                                   + '\n' + 'Received Data Type: {}'.format(type(primary_readings_modbus_data)), exc_info=True)
                               
             
             temp_dict = {}     # Dictionary that will take in the new data on each loop and be cleared on each iteration.
@@ -332,20 +307,13 @@ def main():  # Primary function that contains the data collection loop
             temp_df = pd.DataFrame(temp_dict)     # Make a pandas.DataFrame from the dictionary                 
             temp_df = temp_df[readings]           # Filters out all columns that weren't specified in the 'readings' variable
             
-            if 'data' not in os.listdir('.'):
-                os.mkdir('data')
-                if 'data' in os.listdir('.'):
-                    logging.info('Data directory successfully created')
-                else:
-                    logging.error('Error when creating data directory')
-                    continue
                 
             
             if file_name not in os.listdir('./data'):                                                # '.' indicates 'current directory'
                 with open(file_path, 'a') as data_file:                                              # 'a' indicates 'append' to the file
                     temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True, index=False)     # This is a quick and dirty way to write the column headers to the .csv          
                 if file_name in os.listdir('./data'):
-                    logging.info('New CSV file: ' + file_name + ' successfully created')                                                                                                               
+                    logger.info('New CSV file: ' + file_name + ' successfully created')                                                                                                               
                                     
             else:
                 with open(file_path, 'a') as data_file:                      # 'a' indicates 'append' to the file
@@ -374,11 +342,11 @@ def main():  # Primary function that contains the data collection loop
             
             
                 
-            # End Timer
+            # Text to be printed
         ##########################################    
-        print('success!')
-        
-        print('Time: ', stop - start)
+        print('\n' + 'Data successfully logged' + '\n')
+        print('Loop Runtime: ', stop - start)
+        print('---------------------------------------------------')
         print('')
         
         
@@ -392,7 +360,3 @@ if __name__ == '__main__':
     main()
 
 
-
-
-    
-    
