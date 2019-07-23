@@ -35,14 +35,17 @@ be entered in manually:
     II. In the 'settings' list, you will find a meter called 'test_meter' already entered complete with all required paramters.
         A. Copy and paste this tuple for each meter you wish to pull data from.
             1. Fill in the required parameters (meter name, host, port,and number of decimal places) for each meter you add.
+                i. PLEASE USE REASONABLE NAMES FOR YOUR METERS!!! (meter_1, meter_2, test_meter) <-- Good examples
             2. For each meter, comment out any unwanted measured values in the MEASURED VALUES column.
         B. The test meter is only for reference purposes and connects to the Electro Industries internet-connected
             Shark 200 meter which you can view at www.mynexusmeter.com:8081
             Feel free to remove the test meter if you so choose.
+            
+    III. If using an IDE, Run 'shark_200_meter_settings.py' to make sure there are no syntax errors, otherwise, check the logs in the main script for syntax errors.
         
-    III. Save 'shark_200_meter_settings.py'
+    IV. Save 'shark_200_meter_settings.py'
     
-    IV. Close the file
+    V. Close the file
     --------------------------------------------------------------------------------------
  
 
@@ -102,6 +105,8 @@ settings = [
 #                                                                                 'Symmetrical Component Magnitude + Seq',
 #                                                                                 'Symmetrical Component Magnitude - Seq')
 ##             ),
+    
+    
     ('test_meter', '75.127.189.115', 503, 3, [
                                                          'Volts A-N',
                                                          'Volts B-N',
@@ -136,70 +141,9 @@ settings = [
              ),
 
     
-            ('meter1', '75.127.189.115', 503, 3, [
-                                                         'Volts A-N',
-                                                         #'Volts B-N',
-                                                         #'Volts C-N',
-                                                         #'Volts A-B',
-                                                         'Volts B-C',
-                                                         'Volts C-A',
-                                                         #'Amps A',
-                                                         #'Amps B',
-                                                         #'Amps C',
-                                                         'Watts 3-Ph total',
-                                                         'VARs 3-Ph total',
-                                                         'VAs 3-Ph total',
-                                                         'Power Factor 3-Ph total',
-                                                         'Frequency',
-                                                         'Neutral Current',
-                                                         'Watts Phase A',
-                                                         'Watts Phase B',
-                                                         'Watts Phase C',
-                                                         'VARs Phase A',
-                                                         'VARs, Phase B',
-                                                         'VARs Phase C',
-                                                         'VAs Phase A',
-                                                         'VAs Phase B',
-                                                         'VAs Phase C',
-                                                         'Power Factor Phase A',
-                                                         'Power Factor Phase B',
-                                                         'Power Factor Phase C',
-                                                         'Symmetrical Component Magnitude 0 Seq',
-                                                         'Symmetrical Component Magnitude + Seq',
-                                                         'Symmetrical Component Magnitude - Seq',]
-             ),
             
-            ('meter2', '75.127.189.115', 503, 3, [
-                                                         #'Volts A-N',
-                                                         #'Volts B-N',
-                                                         #'Volts C-N',
-                                                         #'Volts A-B',
-                                                         #'Volts B-C',
-                                                         #'Volts C-A',
-                                                         #'Amps A',
-                                                         #'Amps B',
-                                                         #'Amps C',
-                                                         #'Watts 3-Ph total',
-                                                         #'VARs 3-Ph total',
-                                                         #'VAs 3-Ph total',
-                                                         #'Power Factor 3-Ph total',
-                                                         'Frequency',
-                                                         #'Neutral Current',
-                                                         #'Watts Phase A',
-                                                         #'Watts Phase B',
-                                                         #'Watts Phase C',
-                                                         #'VARs Phase A',
-                                                         #'VARs, Phase B',
-                                                         #'VARs Phase C',
-                                                         #'VAs Phase A',
-                                                         #'VAs Phase B',
-                                                         'VAs Phase C',
-                                                         #'Power Factor Phase A',
-                                                         #'Power Factor Phase B',
-                                                         #'Power Factor Phase C',
-                                                         #'Symmetrical Component Magnitude 0 Seq',
-                                                         #'Symmetrical Component Magnitude + Seq',
-                                                         'Symmetrical Component Magnitude - Seq']
-             ) 
+             
+            
+            
     
     ]
