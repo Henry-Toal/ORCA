@@ -21,43 +21,24 @@ Electro Industries/GaugeTech™ Shark® 200 Data Logging Script version 0.5.7.15
 
 Developed for the Alaska Center for Energy and Power ORCA(Onsite Real-time Collection and Acquisition)
 data collection project, summer 2019.
+
+!!!PLEASE SEE THE README FILE FOR THIS SCRIPT IF YOU HAVE NOT ALREADY!!!
 --------------------------------------------------------------------------------------
-
- - This script is designed to read, format, and output power data from the Shark 200 power meter using
-ModbusTCP and various python libraries to organize the data and make it human readable. This script is
-designed to be run on start-up and will automatically produce .csv files (with column headers) in its current directory
-
- - Before setting up the script to run on startup, please see the 'INPUTS:' section below. Here you will find several
- parameters that must be entered:
- 
-     *host: The ORCA meter is designed to be linked via ethernet to a powerhouse's network. The host is simply the
-     specific
-
-
 
 
 """  
     
     
-    
-
-    
-    
     #TODO:
 #--------------------------------------------------------------------------------------
-# - Create variable-length csv files? More/less than  one day
-# - Setup a seperate logging file for each of the meters.
 # - Make sure that the new .csv files are created at the beginning of the hour and aren't held up by connection issues.
+# - Implement a better connection-checking solution so that all some meters can be functional while still waiting for others to come online
 
 
-# - At some point, change the readings section instructions to include more than the 1000-to-1059 range
+# - At some point, change the readings section to include more than the 1000-to-1059 range
 # -- When that's done, change the output (to_csv) dataframe to be a seperate main dataframe that the
 #....block-specific dataframes are appended to.
 #--------------------------------------------------------------------------------------    
-
- 
-
-    
 
 
     # Supporting Functions
@@ -158,67 +139,70 @@ def checkConnection(host): # A simple function to check if the Modbus connection
 
 # Setup logging directory and 'root' logger for script-wide errors
 #--------------------------------------------------------------------------------------
-if 'logs' not in os.listdir('.'):
+if 'logs' not in os.listdir('.'):     # Cheching to see if a directory called 'logs' is in the current directory and, if not, adding it.
     os.mkdir('logs')
     
-    logging.basicConfig(filename='logs/primary_log.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)
+logging.basicConfig(filename='./logs/basic.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)   # Setting the parameters for the root logger
+    
+main_logger = logging.getLogger('mainErrors')                                                                           # Creating a new logger to log non-meter-specific erros
+main_handler = logging.FileHandler('./logs/mainErrors.log')                                                             # Creating the file and handler that the errors are sent to
+main_handler.setLevel(logging.INFO)                                                                                     # Setting the level of message down to INFO
+main_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')                                            # Formatting the error messages
+main_handler.setFormatter(main_formatter)                                                                               # Adding the new format
+main_logger.addHandler(main_handler)                                                                                    # Adding the handler to the logger                                                                                                                
 #--------------------------------------------------------------------------------------
     
 
 def main():  # Primary function that contains the data collection loop
 
-    logging.basicConfig(filename='logs/primary_log.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)
-
-        # Importing the specified timestep
+        # Global Variables
     #---------------------------------------------------------------------------------
-    timestep = shark_200_meter_settings.TIMESTEP
+    global main_logger
     #---------------------------------------------------------------------------------
-       
        
        # Importing the settings from the settings file
     #---------------------------------------------------------------------------------
     settings = shark_200_meter_settings.settings
     
+    timestep = shark_200_meter_settings.TIMESTEP     # Importing the specified timestep
+    #---------------------------------------------------------------------------------
+    
+        
+        # Making sure the IP address is in a valid format
+    #---------------------------------------------------------------------------------
     for meter in settings:
         
         if len([char for char in meter[1] if ((char >= '0') & (char <= '9')) | (char == '.')]) != len(meter[1]):
-            logging.error('Invalid host name for ' + meter[0] + ': ' + meter[1])
+            main_logger.error('Invalid host name for ' + meter[0] + ': ' + meter[1] + '. Exiting...')
             exit()
-    #---------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------------       
     
-    
-        # Importing the meter names for logging purposes
-    #---------------------------------------------------------------------------------   
-    meter_names_list = [array[0].strip() for array in settings]
-    #---------------------------------------------------------------------------------
-           
            
         # Logging
     #---------------------------------------------------------------------------------    
-    logger_list = [logging.getLogger(name) for name in meter_names_list]
+    # Here we want to create a different logger for each of the meters specified in the settings file, so that we can read them more easily.
     
-    for logger in logger_list:
-        handler = logging.FileHandler('./logs/' + logger.name + '.log')
-        handler.setLevel(logging.INFO)
-        handler_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
-        handler.setFormatter(handler_formatter)
-        logger.addHandler(handler)
+    meter_names_list = [array[0].strip() for array in settings]                          # Creating a list of meter names from the settings file
+    logger_list = [logging.getLogger(name) for name in meter_names_list]                 # Creating a new logger for each meter in the settings file
+    
+    for logger in logger_list:                                                           # Here we loop through each logger in the list and add some attributes                
+        handler = logging.FileHandler('./logs/' + logger.name + '.log')                  # Creates a handler object that will direct logged messages to the 'logs' directory 
+        handler.setLevel(logging.INFO)                                                   # Sets the level of message top be logged down to 'info'
+        handler_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')  # Creating a new format for the messages (time-level: message)
+        handler.setFormatter(handler_formatter)                                          # Adding the format to the handler
+        logger.addHandler(handler)                                                       # Adding the handler to the logger
         
         # See https://docs.python.org/3/library/logging.html for more info in valid LogRecord attributes
         #...to pass as the format argument
-        
-        # By default, the basic logger only reports logs of level 'WARNING' and above, so here,
-        #...since we want information on routine events like the creation of a new .csv file,
-        #...we set lvel to logging.INFO.
     #--------------------------------------------------------------------------------- 
      
         # Creating the directory to store .csv files
     #---------------------------------------------------------------------------------
-    if 'data' not in os.listdir('.'):
+    if 'data' not in os.listdir('.'):                                           # Checking current directory for directory called 'data' 
         try:
-            os.mkdir('data')
+            os.mkdir('data')                                                    # Creating it if it doesn't exist.
         except:
-            logging.error('Could not create data directory', exc_info=True)
+            main_logger.error('Could not create data directory', exc_info=True) # 'exc_info=True' will allow the logger to return the stack trace error message.
     #---------------------------------------------------------------------------------
     ###################################################################################
     ###################################################################################
@@ -236,11 +220,17 @@ def main():  # Primary function that contains the data collection loop
         print('---------------------------------------------------')
         #--------------------------------------------------------------------------------- 
                
-        for meter_name, host, port, decimal_places, readings in settings:
-            logger = [logger for logger in logger_list if logger.name == meter_name][0]
-        
-            while True:
-                if checkConnection(host) == True:
+        for meter_name, host, port, decimal_places, readings in settings:       # Looping through each variable in each of the meter tuples
+            
+            try:
+                logger = [logger for logger in logger_list if logger.name == meter_name][0]     # Finding the logger that matches the current meter name and indexing it out
+            except IndexError:      # IF none of the meter names match, there has been an error and it is most likely caused by an invalid name
+                main_logger.error('Error when converting meter names to logger names. One or more meter names may be invalid. Exiting...')
+                exit()     # Exits the program so that the error can be fixed and bad and/or nonexistent data isn't being transfered to the .csv files.
+                
+                
+            while True:     # If the connection to all meters isn't functional, this loop will continue until they are
+                if checkConnection(host) == True:                 
                     print('connection to ' + meter_name + ' good')
                     break
                 else:
@@ -252,7 +242,7 @@ def main():  # Primary function that contains the data collection loop
             
                 # Timestamp
             #---------------------------------------------------------------------------------   
-            timestamp = time.time()  # Making the timestamp
+            timestamp = int(round(time.time(), 0))  # Making the timestamp
             #---------------------------------------------------------------------------------   
             
                 # Insert timestamp column
@@ -261,9 +251,9 @@ def main():  # Primary function that contains the data collection loop
                 readings.insert(0, 'timestamp') # Makes sure the data has a column for the Unix time stamp
             #---------------------------------------------------------------------------------
             
-                # Filtering out any unwanted commas from the list of desired columns
+                # Filtering out any unwanted commas and/or spaces from the list of desired columns
             #---------------------------------------------------------------------------------
-            readings = [name.replace(',', '') for name in readings]
+            readings = [name.replace(',', '').strip() for name in readings]
             #---------------------------------------------------------------------------------    
                 
                 # Creating the .csv file to be written to
@@ -276,22 +266,24 @@ def main():  # Primary function that contains the data collection loop
                
                
                
-                #Primary readings block -- Pages MM-2 to MM-3 of the shark200 user's manual
+                # Primary readings block -- Pages MM-2 to MM-3 of the shark200 user's manual
             #---------------------------------------------------------------------------------
-            primary_readings_columns = shark_200_readings_blocks.primary_readings_block
-            primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]
+            primary_readings_columns = shark_200_readings_blocks.primary_readings_block                      # Importing the column names 
+            primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]          # Making sure there are no commas in the column names
             
-            primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1059)
+            primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1059) # The primary readings block goes from register 1000 to 1059
+                                                                                                             #...Other reading blocks will cover different registers.
             
-            if primary_readings_modbus_data == None:
-                logger.error('Modbus query returned no data')
+            if primary_readings_modbus_data == None:           # This sometimes happens, possibly due to connection errors
+                logger.error('Modbus query returned no data')  # Reporting this error via the meter-specific logger
                 continue
             else:
                 try:
-                    primary_readings_data = format32BitFloat(primary_readings_modbus_data)
+                    primary_readings_data = format32BitFloat(primary_readings_modbus_data)     # All of the registers in the primary readings block are 32-bit float, so we use this function
                 except:
-                    logger.error('format32BitFLoat() failed to format data'
+                    logger.error('format32BitFLoat() failed to format data. Exiting...'
                                    + '\n' + 'Received Data Type: {}'.format(type(primary_readings_modbus_data)), exc_info=True)
+                    exit()
                               
             
             temp_dict = {}     # Dictionary that will take in the new data on each loop and be cleared on each iteration.
@@ -330,17 +322,12 @@ def main():  # Primary function that contains the data collection loop
         
             # Controlling the length of the time.sleep() call
         #---------------------------------------------------------------------------------
-        run_time = stop - start
-        if (timestep - run_time) >= 0:
-            time.sleep(timestep - run_time)
+        run_time = stop - start                # Calculating the total runtime of the loop
+        if (timestep - run_time) >= 0:         # Checking to see that the script didn't take more time than the specified timestep
+            time.sleep(timestep - run_time)    # Subtracting off the runtime so that the specified timestep remains consistent
         #---------------------------------------------------------------------------------
             
-            
-                                                            
-            
-        
-            
-            
+                   
                 
             # Text to be printed
         ##########################################    
@@ -348,7 +335,7 @@ def main():  # Primary function that contains the data collection loop
         print('Loop Runtime: ', stop - start)
         print('---------------------------------------------------')
         print('')
-        
+        ##########################################
         
         
         
@@ -358,5 +345,3 @@ def main():  # Primary function that contains the data collection loop
         
 if __name__ == '__main__':
     main()
-
-
