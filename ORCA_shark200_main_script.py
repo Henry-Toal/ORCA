@@ -17,15 +17,13 @@ import shark_200_readings_blocks
     
 """
 --------------------------------------------------------------------------------------
-Electro Industries/GaugeTech™ Shark® 200 Data Logging Script version 0.5.7.15
+Electro Industries/GaugeTech™ Shark® 200 Data Logging Script version 0.9.0
 
 Developed for the Alaska Center for Energy and Power ORCA(Onsite Real-time Collection and Acquisition)
 data collection project, summer 2019.
 
 !!!PLEASE SEE THE README FILE FOR THIS SCRIPT IF YOU HAVE NOT ALREADY!!!
 --------------------------------------------------------------------------------------
-
-
 """  
     
     
@@ -34,10 +32,12 @@ data collection project, summer 2019.
 # - Make sure that the new .csv files are created at the beginning of the hour and aren't held up by connection issues.
 # - Implement a better connection-checking solution so that all some meters can be functional while still waiting for others to come online
 
-
+# - Create a variable for the error message logging format, since it's going to be the same across all loggers and has 3 or 4 hard-coded instances right now.
 # - At some point, change the readings section to include more than the 1000-to-1059 range
 # -- When that's done, change the output (to_csv) dataframe to be a seperate main dataframe that the
 #....block-specific dataframes are appended to.
+
+# - In the future, a class-based system for the meters would probably be best
 #--------------------------------------------------------------------------------------    
 
 
@@ -142,7 +142,7 @@ def checkConnection(host): # A simple function to check if the Modbus connection
 if 'logs' not in os.listdir('.'):     # Cheching to see if a directory called 'logs' is in the current directory and, if not, adding it.
     os.mkdir('logs')
     
-logging.basicConfig(filename='./logs/basic.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)   # Setting the parameters for the root logger
+logging.basicConfig(filename='./logs/All_Logs.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)   # Setting the parameters for the root logger
     
 main_logger = logging.getLogger('mainErrors')                                                                           # Creating a new logger to log non-meter-specific erros
 main_handler = logging.FileHandler('./logs/mainErrors.log')                                                             # Creating the file and handler that the errors are sent to
@@ -204,15 +204,23 @@ def main():  # Primary function that contains the data collection loop
         except:
             main_logger.error('Could not create data directory', exc_info=True) # 'exc_info=True' will allow the logger to return the stack trace error message.
     #---------------------------------------------------------------------------------
+    
+    
+    
+    # START PRIMARY DATA COLLECTION LOOP
     ###################################################################################
     ###################################################################################
     while True:     # Data collection loop
         
+            
+            
             # Start Timer
         ##############################
         start = timeit.default_timer()
         ##############################
         
+            
+            
             # Beginning of the message printed after each loop
         #--------------------------------------------------------------------------------- 
         print('')
@@ -220,6 +228,7 @@ def main():  # Primary function that contains the data collection loop
         print('---------------------------------------------------')
         #--------------------------------------------------------------------------------- 
                
+        
         for meter_name, host, port, decimal_places, readings in settings:       # Looping through each variable in each of the meter tuples
             
             try:
@@ -260,7 +269,7 @@ def main():  # Primary function that contains the data collection loop
             #---------------------------------------------------------------------------------
             now = datetime.datetime.now()
             
-            file_name = (str(meter_name) + '_{}'*4 + '.csv').format(now.year, now.month, now.day, now.hour)
+            file_name = (str(meter_name) + '_{}'*3 + '.csv').format(now.year, now.month, now.day)
             file_path = './data/' + file_name
             #---------------------------------------------------------------------------------
                
@@ -309,9 +318,9 @@ def main():  # Primary function that contains the data collection loop
                                     
             else:
                 with open(file_path, 'a') as data_file:                      # 'a' indicates 'append' to the file
-                    temp_df.to_csv(data_file, header=False, index=False)     # This will account for every other loop iteration and append the data to the .csv file
-                
-                    
+                    temp_df.to_csv(data_file, header=False, index=False)     # This will account for every other loop iteration and append the data to the .csv file   
+            #---------------------------------------------------------------------------------
+            
             
             
             # End Timer
@@ -320,6 +329,7 @@ def main():  # Primary function that contains the data collection loop
         ##########################################
         
         
+            
             # Controlling the length of the time.sleep() call
         #---------------------------------------------------------------------------------
         run_time = stop - start                # Calculating the total runtime of the loop
@@ -339,6 +349,7 @@ def main():  # Primary function that contains the data collection loop
         
         
         
+    # END PRIMARY DATA COLLECTION LOOP   
     ###################################################################################
     ###################################################################################
     
