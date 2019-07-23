@@ -30,9 +30,11 @@ data collection project, summer 2019.
     #TODO:
 #--------------------------------------------------------------------------------------
 # - Make sure that the new .csv files are created at the beginning of the hour and aren't held up by connection issues.
-# - Implement a better connection-checking solution so that all some meters can be functional while still waiting for others to come online
-
-# - Create a variable for the error message logging format, since it's going to be the same across all loggers and has 3 or 4 hard-coded instances right now.
+# - Implement a better connection-checking solution so that all some meters can be functional while still waiting for others to
+#...come online
+# - Create a variable for the error message logging format, since it's going to be the same across all loggers and has 3 or 4
+#...hard-coded instances right now.
+# - Create a log message for when connection with a meter has been re-established.
 # - At some point, change the readings section to include more than the 1000-to-1059 range
 # -- When that's done, change the output (to_csv) dataframe to be a seperate main dataframe that the
 #....block-specific dataframes are appended to.
@@ -139,17 +141,20 @@ def checkConnection(host): # A simple function to check if the Modbus connection
 
 # Setup logging directory and 'root' logger for script-wide errors
 #--------------------------------------------------------------------------------------
-if 'logs' not in os.listdir('.'):     # Cheching to see if a directory called 'logs' is in the current directory and, if not, adding it.
-    os.mkdir('logs')
+if 'logs' not in os.listdir('.'):     # Cheching to see if a directory called 'logs' is in the current directory and,
+    os.mkdir('logs')                  #...if not, adding it.
     
-logging.basicConfig(filename='./logs/All_Logs.log', format='%(asctime)s-%(levelname)s: %(message)s', level=logging.INFO)   # Setting the parameters for the root logger
     
-main_logger = logging.getLogger('mainErrors')                                                                           # Creating a new logger to log non-meter-specific erros
-main_handler = logging.FileHandler('./logs/mainErrors.log')                                                             # Creating the file and handler that the errors are sent to
-main_handler.setLevel(logging.INFO)                                                                                     # Setting the level of message down to INFO
-main_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')                                            # Formatting the error messages
-main_handler.setFormatter(main_formatter)                                                                               # Adding the new format
-main_logger.addHandler(main_handler)                                                                                    # Adding the handler to the logger                                                                                                                
+logging.basicConfig(filename='./logs/All_Logs.log',                   # Setting the parameters for the root logger
+                    format='%(asctime)s-%(levelname)s: %(message)s',
+                    level=logging.INFO)   
+    
+main_logger = logging.getLogger('mainErrors')                                 # Creating a new logger for non-meter-specific errors
+main_handler = logging.FileHandler('./logs/mainErrors.log')                   # Creating the file handler and destination file
+main_handler.setLevel(logging.INFO)                                           # Setting the level of message down to INFO
+main_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')  # Formatting the error messages
+main_handler.setFormatter(main_formatter)                                     # Adding the new format
+main_logger.addHandler(main_handler)                                          # Adding the handler to the logger                                                                                                                
 #--------------------------------------------------------------------------------------
     
 
@@ -180,7 +185,7 @@ def main():  # Primary function that contains the data collection loop
            
         # Logging
     #---------------------------------------------------------------------------------    
-    # Here we want to create a different logger for each of the meters specified in the settings file, so that we can read them more easily.
+    # Here we want to create a different logger for each of the meters in the settings file, so that we can read them more easily.
     
     meter_names_list = [array[0].strip() for array in settings]                          # Creating a list of meter names from the settings file
     logger_list = [logging.getLogger(name) for name in meter_names_list]                 # Creating a new logger for each meter in the settings file
@@ -198,11 +203,12 @@ def main():  # Primary function that contains the data collection loop
      
         # Creating the directory to store .csv files
     #---------------------------------------------------------------------------------
-    if 'data' not in os.listdir('.'):                                           # Checking current directory for directory called 'data' 
+    if 'data' not in os.listdir('.'):                                      # Checking current directory for directory called 'data' 
         try:
             os.mkdir('data')                                                    # Creating it if it doesn't exist.
         except:
-            main_logger.error('Could not create data directory', exc_info=True) # 'exc_info=True' will allow the logger to return the stack trace error message.
+            main_logger.error('Could not create data directory', exc_info=True) # 'exc_info=True' will allow the logger to
+                                                                                #...return the stack trace error message.
     #---------------------------------------------------------------------------------
     
     
@@ -229,13 +235,15 @@ def main():  # Primary function that contains the data collection loop
         #--------------------------------------------------------------------------------- 
                
         
-        for meter_name, host, port, decimal_places, readings in settings:       # Looping through each variable in each of the meter tuples
+        for meter_name, host, port, decimal_places, readings in settings:# Looping through each variable in each of the meter tuples
             
-            try:
-                logger = [logger for logger in logger_list if logger.name == meter_name][0]     # Finding the logger that matches the current meter name and indexing it out
-            except IndexError:      # IF none of the meter names match, there has been an error and it is most likely caused by an invalid name
-                main_logger.error('Error when converting meter names to logger names. One or more meter names may be invalid. Exiting...')
-                exit()     # Exits the program so that the error can be fixed and bad and/or nonexistent data isn't being transfered to the .csv files.
+            try:                                      # Finding the logger that matches the current meter name and indexing it out
+                logger = [logger for logger in logger_list if logger.name == meter_name][0] 
+            except IndexError:      # If none of the meter names match the logs, it is most likely caused by an invalid meter name
+                main_logger.error('Error when converting meter names to logger names.'+
+                                  'One or more meter names may be invalid. Exiting...')
+                exit()     # Exits the program so that the error can be fixed and bad and/or nonexistent data isn't being
+                           #...transfered to the .csv files.
                 
                 
             while True:     # If the connection to all meters isn't functional, this loop will continue until they are
@@ -277,18 +285,21 @@ def main():  # Primary function that contains the data collection loop
                
                 # Primary readings block -- Pages MM-2 to MM-3 of the shark200 user's manual
             #---------------------------------------------------------------------------------
-            primary_readings_columns = shark_200_readings_blocks.primary_readings_block                      # Importing the column names 
-            primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]          # Making sure there are no commas in the column names
+            primary_readings_columns = shark_200_readings_blocks.primary_readings_block              # Importing the column names 
+            primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]  # cleaning column names
             
-            primary_readings_modbus_data = getModbusData(host, port, start_register=1000, end_register=1059) # The primary readings block goes from register 1000 to 1059
-                                                                                                             #...Other reading blocks will cover different registers.
-            
+            primary_readings_modbus_data = getModbusData(host,                # The primary readings block goes from
+                                                         port,                #...register 1000 to 1059. 
+                                                         start_register=1000, # Other readings blocks will have cover different
+                                                         end_register=1059)   #...registers.                   
+                                                                  
+                                                                                                                        
             if primary_readings_modbus_data == None:           # This sometimes happens, possibly due to connection errors
                 logger.error('Modbus query returned no data')  # Reporting this error via the meter-specific logger
                 continue
             else:
                 try:
-                    primary_readings_data = format32BitFloat(primary_readings_modbus_data)     # All of the registers in the primary readings block are 32-bit float, so we use this function
+                    primary_readings_data = format32BitFloat(primary_readings_modbus_data)  # See this function above for more info
                 except:
                     logger.error('format32BitFLoat() failed to format data. Exiting...'
                                    + '\n' + 'Received Data Type: {}'.format(type(primary_readings_modbus_data)), exc_info=True)
@@ -297,28 +308,29 @@ def main():  # Primary function that contains the data collection loop
             
             temp_dict = {}     # Dictionary that will take in the new data on each loop and be cleared on each iteration.
             
-            for index, name in enumerate(primary_readings_columns):     # Here we loop through all the possible columns in this block and add them to the dictionary
-                if name == 'timestamp':
+            for index, name in enumerate(primary_readings_columns):     # Here we loop through all the possible columns in 
+                if name == 'timestamp':                                 #...this block and add them to the dictionary                             
                     temp_dict[name] = [timestamp]
                 else:
-                    temp_dict[name] = [round(primary_readings_data[index - 1], decimal_places)]     # Here we need to reduce the index by 1
-                                                                                                    #...to account for the added timestamp column
-                                                                
+                    temp_dict[name] = [round(primary_readings_data[index - 1], decimal_places)]                                                                                                        
+                                                                # Here we need to reduce the index by 1
+                                                                #...to account for the added timestamp column
             
             temp_df = pd.DataFrame(temp_dict)     # Make a pandas.DataFrame from the dictionary                 
             temp_df = temp_df[readings]           # Filters out all columns that weren't specified in the 'readings' variable
             
                 
             
-            if file_name not in os.listdir('./data'):                                                # '.' indicates 'current directory'
-                with open(file_path, 'a') as data_file:                                              # 'a' indicates 'append' to the file
-                    temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True, index=False)     # This is a quick and dirty way to write the column headers to the .csv          
-                if file_name in os.listdir('./data'):
-                    logger.info('New CSV file: ' + file_name + ' successfully created')                                                                                                               
+            if file_name not in os.listdir('./data'):                                # '.' indicates 'current directory'
+                with open(file_path, 'a') as data_file:                              # 'a' indicates 'append' to the file
+                    temp_df[temp_df['timestamp'] == 0].to_csv(data_file, header=True, index=False)  # This is a quick and dirty           
+                if file_name in os.listdir('./data'):                                               #...way to write the column
+                    logger.info('New CSV file: ' + file_name + ' successfully created')             #...column headers to the .csv                                                                                                            
                                     
             else:
                 with open(file_path, 'a') as data_file:                      # 'a' indicates 'append' to the file
-                    temp_df.to_csv(data_file, header=False, index=False)     # This will account for every other loop iteration and append the data to the .csv file   
+                    temp_df.to_csv(data_file, header=False, index=False)     # This will account for every other loop iteration
+                                                                             #...and append the data to the .csv file   
             #---------------------------------------------------------------------------------
             
             
