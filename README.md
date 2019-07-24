@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------------
 Electro Industries/GaugeTech™ Shark® 200 Data Logging Script \
 version 0.9.0 (July 23rd, 2019)
-Developed for the Alaska Center for Energy and Power's ORCA(Onsite Real-time Collection and Acquisition)
+Developed for the Alaska Center for Energy and Power's ORCA (Onsite Real-time Collection and Acquisition)
 data collection project, summer 2019.
 --------------------------------------------------------------------------------------
 
