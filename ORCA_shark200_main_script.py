@@ -367,4 +367,8 @@ def main():  # Primary function that contains the data collection loop
     
         
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except:
+        main_logger.error('Error in main()', exc_info=True)
+        
