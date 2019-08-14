@@ -224,7 +224,6 @@ def main():  # Primary function that contains the data collection loop
     ###################################################################################
     while True:     # Data collection loop
         
-        main_logger.info('Testing')    
             
             # Start Timer
         ##############################
@@ -235,9 +234,6 @@ def main():  # Primary function that contains the data collection loop
             
             # Beginning of the message printed after each loop
         #--------------------------------------------------------------------------------- 
-        print('')
-        print(datetime.datetime.now())
-        print('---------------------------------------------------')
         #--------------------------------------------------------------------------------- 
 
                
@@ -255,10 +251,8 @@ def main():  # Primary function that contains the data collection loop
                 
             while True:     # If the connection to all meters isn't functional, this loop will continue until they are
                 if checkConnection(host) == True:                 
-                    print('connection to ' + meter_name + ' good')
                     break
                 else:
-                    print('Could not connect to {} at {}'.format(meter_name, host) + ' Retrying...')
                     logger.error('Could not connect to {} at {}'.format(meter_name, host) + ' Retrying...')
                     time.sleep(10)
         
@@ -360,10 +354,6 @@ def main():  # Primary function that contains the data collection loop
                 
             # Text to be printed
         ##########################################    
-        print('\n' + 'Data successfully logged' + '\n')
-        print('Loop Runtime: ', stop - start)
-        print('---------------------------------------------------')
-        print('')
         ##########################################
         
         
