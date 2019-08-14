@@ -4,6 +4,7 @@ import pyModbusTCP
 from pyModbusTCP.client import ModbusClient
 import struct
 import logging
+from logging.handlers import RotatingFileHandler
 import timeit
 import time
 import datetime
@@ -150,7 +151,7 @@ logging.basicConfig(filename='./logs/All_Logs.log',                   # Setting 
                     level=logging.INFO)   
     
 main_logger = logging.getLogger('mainErrors')                                 # Creating a new logger for non-meter-specific errors
-main_handler = logging.FileHandler('./logs/mainErrors.log')                   # Creating the file handler and destination file
+main_handler = logging.handlers.RotatingFileHandler('./logs/mainErrors.log')                   # Creating the file handler and destination file
 main_handler.setLevel(logging.INFO)                                           # Setting the level of message down to INFO
 main_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')  # Formatting the error messages
 main_handler.setFormatter(main_formatter)                                     # Adding the new format
@@ -196,7 +197,7 @@ def main():  # Primary function that contains the data collection loop
     logger_list = [logging.getLogger(name) for name in meter_names_list]                 # Creating a new logger for each meter in the settings file
     
     for logger in logger_list:                                                           # Here we loop through each logger in the list and add some attributes                
-        handler = logging.FileHandler('./logs/' + logger.name + '.log')                  # Creates a handler object that will direct logged messages to the 'logs' directory 
+        handler = logging.handlers.RotatingFileHandler('./logs/' + logger.name + '.log')                  # Creates a handler object that will direct logged messages to the 'logs' directory
         handler.setLevel(logging.INFO)                                                   # Sets the level of message top be logged down to 'info'
         handler_formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')  # Creating a new format for the messages (time-level: message)
         handler.setFormatter(handler_formatter)                                          # Adding the format to the handler
