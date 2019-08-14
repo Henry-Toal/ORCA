@@ -174,7 +174,6 @@ def main():  # Primary function that contains the data collection loop
 
         # Setting name of the Pi
     # ---------------------------------------------------------------------------------
-    Pi_name = os.environ['COMPUTERNAME'].replace('-', '_')
     # ---------------------------------------------------------------------------------
 
     
@@ -283,7 +282,7 @@ def main():  # Primary function that contains the data collection loop
             #---------------------------------------------------------------------------------
             now = datetime.datetime.now()
             
-            file_name = (Pi_name + str(meter_name) + '_{}'*3 + '.csv').format(now.year, now.month, now.day)
+            file_name = (str(meter_name) + '_{}'*3 + '.csv').format(now.year, now.month, now.day)
             file_path = './data/' + file_name
             #---------------------------------------------------------------------------------
                
