@@ -171,6 +171,12 @@ def main():  # Primary function that contains the data collection loop
     
     timestep = shark_200_meter_settings.TIMESTEP     # Importing the specified timestep
     #---------------------------------------------------------------------------------
+
+        # Setting name of the Pi
+    # ---------------------------------------------------------------------------------
+    Pi_name = os.environ['COMPUTERNAME'].replace('-', '_')
+    # ---------------------------------------------------------------------------------
+
     
         
         # Making sure the IP address is in a valid format
@@ -277,7 +283,7 @@ def main():  # Primary function that contains the data collection loop
             #---------------------------------------------------------------------------------
             now = datetime.datetime.now()
             
-            file_name = (str(meter_name) + '_{}'*3 + '.csv').format(now.year, now.month, now.day)
+            file_name = (Pi_name + str(meter_name) + '_{}'*3 + '.csv').format(now.year, now.month, now.day)
             file_path = './data/' + file_name
             #---------------------------------------------------------------------------------
                
