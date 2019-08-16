@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="6c640524-745b-4aea-95b4-8eb003078242" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ORCA_shark200_main_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/ORCA_shark200_main_script.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/shark_200_meter_settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/shark_200_meter_settings.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

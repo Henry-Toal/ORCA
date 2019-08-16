@@ -9,29 +9,29 @@ Below you will find a python 'list' object called 'settings'. Each item in this 
 python 'tuple' object that represents a Shark 200 meter that you wish to pull data from. Each tuple also requires several parameters that must
 be entered in manually:
 
-     
+
      # Explanation of Parameters:
     --------------------------------------------------------------------------------------
  - METER NAME: This is for your convenience, only effects the names of the .csv files that contain the data, and may be left blank if you so choose.
      -- If you do choose to assign meter names for each meter, please try to avoid characters that are not valid for windows/linux filenames.
- 
+
  - HOST: This is the IP address of the meter you wish to pull data from. Please enter it as a string (with '' around it).
- 
+
  - PORT: The port the specific device is using for Modbus communication. Usually 502 or 503.
- 
+
  - TIMESTEP: Here you can choose the interval between data measurements (in seconds). You unfortunately you must choose the same timestep for each meter.
-             
+
  - NUMBER OF DECIMAL PLACES: Here you can choose how many decimal places to round your data.
- 
+
  - VALUES: The final item in each tuple is a list containing every value currently available for measurement. If you only want specific values,
            please comment out any you do not wish to include.
     --------------------------------------------------------------------------------------
-    
-    
+
+
     # Instructions
     --------------------------------------------------------------------------------------
     I. Set your timestep(in seconds). This value will be applied accross all your meters.
-    
+
     II. In the 'settings' list, you will find a meter called 'test_meter' already entered complete with all required paramters.
         A. Copy and paste this tuple for each meter you wish to pull data from.
             1. Fill in the required parameters (meter name, host, port,and number of decimal places) for each meter you add.
@@ -40,14 +40,14 @@ be entered in manually:
         B. The test meter is only for reference purposes and connects to the Electro Industries internet-connected
             Shark 200 meter which you can view at www.mynexusmeter.com:8081
             Feel free to remove the test meter if you so choose.
-            
+
     III. If using an IDE, Run 'shark_200_meter_settings.py' to make sure there are no syntax errors, otherwise, check the logs in the main script for syntax errors.
-        
+
     IV. Save 'shark_200_meter_settings.py'
-    
+
     V. Close the file
     --------------------------------------------------------------------------------------
- 
+
 
 --------------------------------------------------------------------------------------
 
@@ -105,9 +105,9 @@ settings = [
 #                                                                                 'Symmetrical Component Magnitude + Seq',
 #                                                                                 'Symmetrical Component Magnitude - Seq')
 ##             ),
-    
-    
-    ('test_meter', '75.127.189.115', 503, 3, [
+
+
+    ('TestMeter', '75.127.189.115', 503, 3, [
                                                          'Volts A-N',
                                                          'Volts B-N',
                                                          'Volts C-N',
@@ -140,10 +140,10 @@ settings = [
                                                          'Symmetrical Component Magnitude - Seq']
              ),
 
-    
-            
-             
-            
-            
-    
+
+
+
+
+
+
     ]
