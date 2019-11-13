@@ -212,40 +212,33 @@ def main():  # Primary function that contains the data collection loop
     #---------------------------------------------------------------------------------
     if 'data' not in os.listdir('.'):                                      # Checking current directory for directory called 'data' 
         try:
-            os.mkdir('data')                                                    # Creating it if it doesn't exist.
+            os.mkdir('data') # Creating it if it doesn't exist.
+            print(f"Successfully created data file at {os.path.abspath('./data')}")
         except:
             main_logger.error('Could not create data directory', exc_info=True) # 'exc_info=True' will allow the logger to
                                                                                 #...return the stack trace error message.
     #---------------------------------------------------------------------------------
-    
-    
-    
+
+    # A handy message to make sure the script is actually running
+    # --------------------------------------------------------------------------------
+    print("Setup complete. Beginning data collection")
+    # --------------------------------------------------------------------------------
+        
     # START PRIMARY DATA COLLECTION LOOP
     ###################################################################################
     ###################################################################################
     while True:     # Data collection loop
-        
+
+        # Time management loop
+        ########################################################
         while True:
             if datetime.datetime.now().second % timestep == 0:
                 break
             else:
                 time.sleep(0.05)
-            
-            # Start Timer
-        ##############################
-        #start = timeit.default_timer()
-        ##############################
-        
-            
-            
-            # Beginning of the message printed after each loop
-        #--------------------------------------------------------------------------------- 
-        print('')
-        print(datetime.datetime.now())
-        print('---------------------------------------------------')
-        #--------------------------------------------------------------------------------- 
-               
-        
+        ########################################################
+
+
         for meter_name, host, port, decimal_places, readings in settings:# Looping through each variable in each of the meter tuples
             
             try:                                      # Finding the logger that matches the current meter name and indexing it out
@@ -258,8 +251,7 @@ def main():  # Primary function that contains the data collection loop
                 
                 
             while True:     # If the connection to all meters isn't functional, this loop will continue until they are
-                if checkConnection(host) == True:                 
-                    print('connection to ' + meter_name + ' good')
+                if checkConnection(host) == True:
                     break
                 else:
                     print('Could not connect to {} at {}'.format(meter_name, host) + ' Retrying...')
@@ -346,31 +338,11 @@ def main():  # Primary function that contains the data collection loop
             
             
             
-            # End Timer
-        ##########################################        
-        #stop = timeit.default_timer()
-        ##########################################
+
+
         
-        
-            
-            # Controlling the length of the time.sleep() call
-        #---------------------------------------------------------------------------------
-        #run_time = stop - start                # Calculating the total runtime of the loop
-        #if (timestep - run_time) >= 0:         # Checking to see that the script didn't take more time than the specified timestep
-            #time.sleep(timestep - run_time)    # Subtracting off the runtime so that the specified timestep remains consistent
-        #---------------------------------------------------------------------------------
-            
-                   
-                
-            # Text to be printed
-        ##########################################    
-        print('\n' + 'Data successfully logged' + '\n')
-        #print('Loop Runtime: ', stop - start)
-        print('---------------------------------------------------')
-        print('')
-        ##########################################
-        
-        
+
+
         
     # END PRIMARY DATA COLLECTION LOOP   
     ###################################################################################
