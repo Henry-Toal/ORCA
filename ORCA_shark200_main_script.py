@@ -29,7 +29,7 @@ data collection project, summer 2019.
 """  
     
     
-    #TODO:
+    # TODO:
 #--------------------------------------------------------------------------------------
 # - Make sure that the new .csv files are created at the beginning of the hour and aren't held up by connection issues.
 # - Implement a better connection-checking solution so that all some meters can be functional while still waiting for others to
@@ -225,11 +225,15 @@ def main():  # Primary function that contains the data collection loop
     ###################################################################################
     while True:     # Data collection loop
         
-            
+        while True:
+            if datetime.datetime.now().second % timestep == 0:
+                break
+            else:
+                time.sleep(0.05)
             
             # Start Timer
         ##############################
-        start = timeit.default_timer()
+        #start = timeit.default_timer()
         ##############################
         
             
@@ -344,16 +348,16 @@ def main():  # Primary function that contains the data collection loop
             
             # End Timer
         ##########################################        
-        stop = timeit.default_timer()
+        #stop = timeit.default_timer()
         ##########################################
         
         
             
             # Controlling the length of the time.sleep() call
         #---------------------------------------------------------------------------------
-        run_time = stop - start                # Calculating the total runtime of the loop
-        if (timestep - run_time) >= 0:         # Checking to see that the script didn't take more time than the specified timestep
-            time.sleep(timestep - run_time)    # Subtracting off the runtime so that the specified timestep remains consistent
+        #run_time = stop - start                # Calculating the total runtime of the loop
+        #if (timestep - run_time) >= 0:         # Checking to see that the script didn't take more time than the specified timestep
+            #time.sleep(timestep - run_time)    # Subtracting off the runtime so that the specified timestep remains consistent
         #---------------------------------------------------------------------------------
             
                    
@@ -361,7 +365,7 @@ def main():  # Primary function that contains the data collection loop
             # Text to be printed
         ##########################################    
         print('\n' + 'Data successfully logged' + '\n')
-        print('Loop Runtime: ', stop - start)
+        #print('Loop Runtime: ', stop - start)
         print('---------------------------------------------------')
         print('')
         ##########################################
