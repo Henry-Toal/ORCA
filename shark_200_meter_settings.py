@@ -72,8 +72,8 @@ settings = [
 
 # EXAMPLE:
 
-#             (str)     (str)   (int)        (int)                              MEASURED VALUES:     
-#        ('METER NAME', 'HOST', PORT, NUMBER OF DECIMAL PLACES, (
+#             (str)     (str)   (int)        (int)                (int)         MEASURED VALUES:
+#        ('METER NAME', 'HOST', PORT, NUMBER OF DECIMAL PLACES, UNIT ID, (
 #                                                                                 'Volts A-N',
 #                                                                                 'Volts B-N',
 #                                                                                 'Volts C-N',
@@ -107,7 +107,7 @@ settings = [
 ##             ),
 
 
-    ('TestMeter', '75.127.189.115', 503, 3, [
+    ('Galena_1', '169.254.102.39', 502, 3, 1, [
                                                          'Volts A-N',
                                                          'Volts B-N',
                                                          'Volts C-N',
@@ -140,10 +140,37 @@ settings = [
                                                          'Symmetrical Component Magnitude - Seq']
              ),
 
+    ('Galena_2', '169.254.102.39', 502, 3, 2, [
+        'Volts A-N',
+        'Volts B-N',
+        'Volts C-N',
+        'Volts A-B',
+        'Volts B-C',
+        'Volts C-A',
+        'Amps A',
+        'Amps B',
+        'Amps C',
+        'Watts 3-Ph total',
+        'VARs 3-Ph total',
+        'VAs 3-Ph total',
+        'Power Factor 3-Ph total',
+        'Frequency',
+        'Neutral Current',
+        'Watts Phase A',
+        'Watts Phase B',
+        'Watts Phase C',
+        'VARs Phase A',
+        'VARs, Phase B',
+        'VARs Phase C',
+        'VAs Phase A',
+        'VAs Phase B',
+        'VAs Phase C',
+        'Power Factor Phase A',
+        'Power Factor Phase B',
+        'Power Factor Phase C',
+        'Symmetrical Component Magnitude 0 Seq',
+        'Symmetrical Component Magnitude + Seq',
+        'Symmetrical Component Magnitude - Seq']
+     ),
 
-
-
-
-
-
-    ]
+]
