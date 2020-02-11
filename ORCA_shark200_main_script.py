@@ -48,7 +48,7 @@ data collection project, summer 2019.
     # Supporting Functions
 #######################################################################################
 #######################################################################################
-def getModbusData(host, port, start_register, end_register):                                                               
+def getModbusData(host, port, unit_id, start_register, end_register):
     
     # Returns a list containing the data from each Modbus register between
     #...and including the start and end register
@@ -63,6 +63,8 @@ def getModbusData(host, port, start_register, end_register):
     client = ModbusClient()     # Creates a Modbus client opject 
     client.host(host)           # Assigns the specified host (IP) address to the client      
     client.port(port)           # Assigns the specified port to the client
+
+    client.unit_id(unit_id=unit_id)
     
     start_register -= 2     # The Modbus registers listed in the Shark200 User's manual
     end_register -= 2       #...are all offset by 2 from their actual values,
@@ -239,7 +241,7 @@ def main():  # Primary function that contains the data collection loop
         ########################################################
 
 
-        for meter_name, host, port, decimal_places, readings in settings:# Looping through each variable in each of the meter tuples
+        for meter_name, host, port, decimal_places, unit_id, readings in settings:# Looping through each variable in each of the meter tuples
             
             try:                                      # Finding the logger that matches the current meter name and indexing it out
                 logger = [logger for logger in logger_list if logger.name == meter_name][0] 
@@ -292,7 +294,8 @@ def main():  # Primary function that contains the data collection loop
             primary_readings_columns = [name.replace(',', '') for name in primary_readings_columns]  # cleaning column names
             
             primary_readings_modbus_data = getModbusData(host,                # The primary readings block goes from
-                                                         port,                #...register 1000 to 1059. 
+                                                         port,
+                                                         unit_id,             #...register 1000 to 1059.
                                                          start_register=1000, # Other readings blocks will have cover different
                                                          end_register=1059)   #...registers.                   
                                                                   
